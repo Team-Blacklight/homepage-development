@@ -1,0 +1,480 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080a10">
+    <meta name="description" content="Team BLACKLIGHT — a gaming and development collective building things beyond the ordinary.">
+    <title>TEAM BLACKLIGHT // HOME</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.ico" sizes="any">
+</head>
+<body>
+    <header class="navbar">
+        <a class="logo" href="#home">
+            <span class="logo-mark">◈</span>
+             TEAM BLACKLIGHT<span class="accent">_</span>
+        </a>
+
+        <nav>
+            <a href="#projects">PROJECTS</a>
+            <a href="#terminal">TERMINAL</a>
+            <a href="#store">STORE</a>
+            <a href="#about">ABOUT</a>
+            <a href="#account">ACCOUNT</a>
+        </nav>
+
+        <a class="status" href="#terminal">
+            <span class="status-dot"></span> SYSTEM ONLINE
+        </a>
+    </header>
+
+    <main>
+        <section class="hero" id="home">
+            <div class="hero-grid"></div>
+
+            <div class="hero-content">
+                <p class="eyebrow">INDEPENDENT COLLECTIVE // EST. UNKNOWN</p>
+
+                <h1>
+                    WE BUILD<br>
+                    <span class="gradient-text">BEYOND</span><br>
+                    THE LIGHT.
+                </h1>
+
+                <p class="hero-description">
+                    Games. Hardware. Software. Experiments.
+                    A collective of creators turning ridiculous ideas
+                    into real projects.
+                </p>
+
+                <div class="hero-buttons">
+                    <a class="button primary" href="#projects">EXPLORE PROJECTS ↗</a>
+                    <a class="button secondary" href="#terminal">ACCESS TERMINAL</a>
+                </div>
+
+                <div class="hero-footer">
+                    <span>BL // 001</span>
+                    <span>CREATIVITY HAS NO PERMISSIONS.</span>
+                    <span>BC, CANADA</span>
+                </div>
+            </div>
+
+            <div class="hero-symbol" aria-hidden="true">
+                <div class="symbol-ring ring-one"></div>
+                <div class="symbol-ring ring-two"></div>
+                <div class="symbol-core"><img src="logo.ico" alt="Team TEAM BLACKLIGHT logo" height="120" width="120"></div>
+                <span class="symbol-label">TEAM BLACKLIGHT<br>NETWORK</span>
+            </div>
+        </section>
+
+        <section class="section" id="projects">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">// 01 — ACTIVE DEVELOPMENT</p>
+                    <h2>PROJECT <span class="accent">DATABASE</span></h2>
+                </div>
+                <span class="section-code">PROJECTS / 002+</span>
+            </div>
+
+            <div class="project-grid">
+                <article class="project-card">
+                    <div class="card-top">
+                        <span class="tag">HARDWARE / SOFTWARE</span>
+                        <span class="card-number">P-001</span>
+                    </div>
+                    <div class="project-icon">◉</div>
+                    <h3>mOS</h3>
+                    <p>
+                        A pocket-sized operating system concept built
+                        around a round display, expandable apps,
+                        and independent communication.
+                    </p>
+                    <div class="card-bottom">
+                        <span>STATUS: IN DEVELOPMENT</span>
+                        <a href="#terminal">INSPECT ↗</a>
+                    </div>
+                </article>
+
+                <article class="project-card">
+                    <div class="card-top">
+                        <span class="tag">WIRELESS / NETWORKING</span>
+                        <span class="card-number">P-002</span>
+                    </div>
+                    <div class="project-icon">⌁</div>
+                    <h3>MISSION LINK</h3>
+                    <p>
+                        An experimental LoRa mesh networking project
+                        exploring communication between independent
+                        nodes over long distances.
+                    </p>
+                    <div class="card-bottom">
+                        <span>STATUS: IN DEVELOPMENT</span>
+                        <a href="#terminal">INSPECT ↗</a>
+                    </div>
+                </article>
+
+                <article class="project-card classified">
+                    <div class="card-top">
+                        <span class="tag">CLASSIFIED</span>
+                        <span class="card-number">P-003</span>
+                    </div>
+                    <div class="project-icon">?</div>
+                    <h3>UNKNOWN SIGNAL</h3>
+                    <p>
+                        Not every project is ready for the public.
+                        Some things are better left undiscovered.
+                    </p>
+                    <div class="card-bottom">
+                        <span>STATUS: REDACTED</span>
+                        <a href="#terminal">INVESTIGATE ↗</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="terminal-section" id="terminal">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">// 02 — RESTRICTED INTERFACE</p>
+                    <h2>TEAM BLACKLIGHT <span class="accent">TERMINAL</span></h2>
+                </div>
+                <span class="section-code">TTY // PUBLIC ACCESS</span>
+            </div>
+
+            <div class="terminal-window">
+                <div class="terminal-bar">
+                    <div class="window-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span>bl_terminal.exe</span>
+                    <span class="terminal-live">SESSION READY</span>
+                </div>
+
+                <div class="terminal-output" id="terminal-output">
+                    <p>TEAM TEAM BLACKLIGHT // INTERFACE v0.1</p>
+                    <p>Connection established.</p>
+                    <p>Type <span class="terminal-highlight">help</span> to view available commands.</p>
+                </div>
+
+                <form id="terminal-form" class="terminal-input-row">
+                    <label for="terminal-input">guest@TEAM BLACKLIGHT:~$</label>
+                    <input
+                        id="terminal-input"
+                        type="text"
+                        autocomplete="off"
+                        spellcheck="false"
+                        placeholder="enter command..."
+                        aria-label="Terminal command"
+                    >
+                </form>
+            </div>
+            <p class="terminal-hint">TRY: help / projects / about / status / secret</p>
+        </section>
+
+        <section class="section store-section" id="store">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">// 03 — TEAM BLACKLIGHT SUPPLY</p>
+                    <h2>THE <span class="accent">STORE</span></h2>
+                </div>
+                <span class="section-code">COMMERCE / PREVIEW</span>
+            </div>
+
+            <div class="store-banner">
+                <div>
+                    <p class="eyebrow">HARDWARE IS COMING</p>
+                    <h3>TOOLS FOR THE<br><span class="gradient-text">UNCONNECTED.</span></h3>
+                    <p>
+                        Future hardware, experimental devices,
+                        and Team TEAM BLACKLIGHT gear. This storefront
+                        is a preview; purchases aren't enabled yet.
+                    </p>
+                    <a class="button secondary" href="#terminal">CHECK SYSTEM STATUS</a>
+                </div>
+
+                <div class="store-art" aria-hidden="true">
+                    <div class="store-orbit"></div>
+                    <div class="store-device">
+                        <div class="device-screen">
+                            <span>BL</span>
+                            <small>mOS // OFFLINE</small>
+                        </div>
+                    </div>
+                    <span class="art-label">CONCEPT DEVICE / 001</span>
+                </div>
+            </div>
+
+            <p class="store-note">
+                STORE PREVIEW ONLY — product concepts are not guaranteed to
+                represent final hardware. No payments are collected on this site.
+            </p>
+        </section>
+
+
+<section class="section account-section" id="account">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">// 04 — IDENTITY MANAGEMENT</p>
+            <h2>MEMBER <span class="accent">ACCESS</span></h2>
+        </div>
+        <span class="section-code">AUTH / SUPABASE</span>
+    </div>
+
+    <div class="account-panel">
+        <div id="account-status" class="account-status" role="status" aria-live="polite">
+            Checking authentication status...
+        </div>
+
+        <div id="auth-forms" class="auth-grid">
+            <form id="signup-form" class="auth-form">
+                <h3>CREATE ACCOUNT</h3>
+                <label for="signup-name">Display name</label>
+                <input id="signup-name" name="display_name"
+                    type="text" maxlength="60" required autocomplete="nickname">
+
+                <label for="signup-email">Email</label>
+                <input id="signup-email" name="email"
+                    type="email" required autocomplete="email">
+
+                <label for="signup-password">Password</label>
+                <input id="signup-password" name="password"
+                    type="password" minlength="8" required autocomplete="new-password">
+
+                <button class="button primary" type="submit">CREATE ACCOUNT</button>
+            </form>
+
+            <form id="login-form" class="auth-form">
+                <h3>MEMBER LOGIN</h3>
+                <label for="login-email">Email</label>
+                <input id="login-email" name="email"
+                    type="email" required autocomplete="email">
+
+                <label for="login-password">Password</label>
+                <input id="login-password" name="password"
+                    type="password" required autocomplete="current-password">
+
+                <button class="button primary" type="submit">LOG IN</button>
+            </form>
+        </div>
+
+        <div id="account-details" hidden>
+            <p>IDENTITY VERIFIED</p>
+            <h3 id="account-name">Member</h3>
+            <p>Email: <span id="account-email"></span></p>
+            <p>Access level: <span id="account-role">member</span></p>
+            <button id="logout-button" class="button secondary" type="button">
+                LOG OUT
+            </button>
+        </div>
+    </div>
+</section>
+
+
+<!-- TEAM BLACKLIGHT CONTROL — STAFF ONLY -->
+<
+<section class="section staff-dashboard" id="control" hidden>
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">// RESTRICTED — STAFF OPERATIONS</p>
+            <h2>TEAM BLACKLIGHT <span class="accent">CONTROL</span></h2>
+        </div>
+        <span class="section-code">STAFF CONSOLE</span>
+    </div>
+
+    <div class="control-banner">
+        <span class="control-indicator"></span>
+        <div>
+            <strong id="control-welcome">STAFF CONTROL INTERFACE</strong>
+            <p id="control-role">Verifying permissions...</p>
+        </div>
+    </div>
+
+    <nav class="control-nav" aria-label="Staff console navigation">
+        <button type="button" class="control-tab active" data-panel="overview">OVERVIEW</button>
+        <button type="button" class="control-tab" data-panel="projects">PROJECTS</button>
+        <button type="button" class="control-tab" data-panel="store">STORE</button>
+        <button type="button" class="control-tab" data-panel="members">MEMBERS</button>
+        <button type="button" class="control-tab" data-panel="activity">ACTIVITY</button>
+    </nav>
+
+    <div class="control-panel" id="panel-overview">
+        <h3>OPERATIONS OVERVIEW</h3>
+        <div class="control-grid">
+            <article class="control-card">
+                <span class="control-card-icon">◈</span>
+                <h3>PROJECT CONTROL</h3>
+                <p>Create, edit, publish, and archive Team Blacklight projects.</p>
+                <button type="button" class="button secondary" data-open-panel="projects">OPEN PROJECTS</button>
+            </article>
+            <article class="control-card">
+                <span class="control-card-icon">⌘</span>
+                <h3>STORE MANAGEMENT</h3>
+                <p>Manage product listings, prices, stock, and publication status.</p>
+                <button type="button" class="button secondary" data-open-panel="store">OPEN STORE</button>
+            </article>
+            <article class="control-card">
+                <span class="control-card-icon">◎</span>
+                <h3>MEMBERS</h3>
+                <p>Review registered members and authorized staff roles.</p>
+                <button type="button" class="button secondary" data-open-panel="members">OPEN DIRECTORY</button>
+            </article>
+            <article class="control-card">
+                <span class="control-card-icon">▤</span>
+                <h3>SYSTEM ACTIVITY</h3>
+                <p>Review actions recorded during this browser session.</p>
+                <button type="button" class="button secondary" data-open-panel="activity">VIEW ACTIVITY</button>
+            </article>
+        </div>
+    </div>
+
+    <div class="control-panel" id="panel-projects" hidden>
+        <div class="control-panel-heading">
+            <div>
+                <p class="eyebrow">// PROJECT DATABASE</p>
+                <h3>PROJECT CONTROL</h3>
+            </div>
+            <button type="button" class="button secondary" id="refresh-projects">REFRESH</button>
+        </div>
+
+        <form id="project-form" class="control-form">
+            <h4 id="project-form-heading">CREATE PROJECT</h4>
+            <input type="hidden" id="project-id">
+
+            <label for="project-title">Project title</label>
+            <input id="project-title" maxlength="120" required>
+
+            <label for="project-slug">URL slug (e.g. mission-link)</label>
+            <input id="project-slug" maxlength="140" pattern="[a-z0-9-]+" required>
+
+            <label for="project-summary">Short summary</label>
+            <textarea id="project-summary" maxlength="300" rows="2"></textarea>
+
+            <label for="project-description">Full description</label>
+            <textarea id="project-description" rows="4"></textarea>
+
+            <label for="project-status">Status</label>
+            <select id="project-status">
+                <option value="planned">Planned</option>
+                <option value="in_development">In development</option>
+                <option value="testing">Testing</option>
+                <option value="released">Released</option>
+                <option value="paused">Paused</option>
+                <option value="archived">Archived</option>
+            </select>
+
+            <label class="control-check">
+                <input type="checkbox" id="project-published">
+                Publish this project publicly
+            </label>
+
+            <div class="control-actions">
+                <button type="submit" class="button primary">SAVE PROJECT</button>
+                <button type="button" class="button secondary" id="cancel-project-edit">CLEAR FORM</button>
+            </div>
+        </form>
+
+        <p id="project-status-message" class="control-message" role="status" aria-live="polite"></p>
+        <div id="project-list" class="control-record-list"></div>
+    </div>
+
+    <div class="control-panel" id="panel-store" hidden>
+        <div class="control-panel-heading">
+            <div>
+                <p class="eyebrow">// PRODUCT DATABASE</p>
+                <h3>STORE MANAGEMENT</h3>
+            </div>
+            <button type="button" class="button secondary" id="refresh-products">REFRESH</button>
+        </div>
+
+        <form id="product-form" class="control-form">
+            <h4 id="product-form-heading">CREATE PRODUCT</h4>
+            <input type="hidden" id="product-id">
+
+            <label for="product-name">Product name</label>
+            <input id="product-name" maxlength="120" required>
+
+            <label for="product-slug">URL slug</label>
+            <input id="product-slug" maxlength="140" pattern="[a-z0-9-]+" required>
+
+            <label for="product-description">Description</label>
+            <textarea id="product-description" rows="3"></textarea>
+
+            <label for="product-price">Price (CAD dollars)</label>
+            <input id="product-price" type="number" min="0" max="1000000" step="0.01" required>
+
+            <label for="product-stock">Stock quantity</label>
+            <input id="product-stock" type="number" min="0" max="1000000" step="1" required>
+
+            <label for="product-image">Image path (optional)</label>
+            <input id="product-image" maxlength="500" placeholder="e.g. images/product.png">
+
+            <label class="control-check">
+                <input type="checkbox" id="product-published">
+                Publish this product publicly
+            </label>
+
+            <div class="control-actions">
+                <button type="submit" class="button primary">SAVE PRODUCT</button>
+                <button type="button" class="button secondary" id="cancel-product-edit">CLEAR FORM</button>
+            </div>
+        </form>
+
+        <p id="product-status-message" class="control-message" role="status" aria-live="polite"></p>
+        <div id="product-list" class="control-record-list"></div>
+    </div>
+
+    <div class="control-panel" id="panel-members" hidden>
+        <div class="control-panel-heading">
+            <div>
+                <p class="eyebrow">// PERSONNEL DATABASE</p>
+                <h3>REGISTERED MEMBERS</h3>
+            </div>
+            <button type="button" class="button secondary" id="refresh-roster">REFRESH</button>
+        </div>
+        <p id="roster-status" role="status" aria-live="polite">Waiting for authorization...</p>
+        <div id="staff-roster" class="staff-roster"></div>
+        <p class="control-hint">Only overseers can change another member's role. Role changes are enforced by Supabase.</p>
+    </div>
+
+    <div class="control-panel" id="panel-activity" hidden>
+        <div class="control-panel-heading">
+            <div>
+                <p class="eyebrow">// SESSION LOG</p>
+                <h3>SYSTEM ACTIVITY</h3>
+            </div>
+            <button type="button" class="button secondary" id="clear-activity">CLEAR VIEW</button>
+        </div>
+        <p class="control-hint">This first version records activity in this browser session only. It is not yet a persistent security audit log.</p>
+        <div id="control-activity-list" class="control-record-list"></div>
+    </div>
+</section>
+
+
+
+
+        <section class="about-section" id="about">
+            <p class="eyebrow">// 04 — WHO WE ARE</p>
+            <h2>MADE BY CREATORS.<br><span class="gradient-text">DEFINED BY NOTHING.</span></h2>
+            <p>
+                TEAM BLACKLIGHT is a gaming and development collective
+                where software, hardware, games, and questionable ideas
+                all share the same workspace.
+            </p>
+            <a class="button primary" href="#home">BACK TO TOP ↑</a>
+        </section>
+    </main>
+
+    <footer>
+        <a class="logo" href="#home">◈ TEAM BLACKLIGHT<span class="accent">_</span></a>
+        <span>INDEPENDENTLY BUILT. CONSTANTLY EVOLVING.</span>
+        <span>© TEAM BLACKLIGHT</span>
+    </footer>
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
