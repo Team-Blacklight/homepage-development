@@ -1090,3 +1090,92 @@ function setupControlConsole() {
 }
 
 setupControlConsole();
+
+
+// TEAM BLACKLIGHT — JOIN APPLICATIONS
+const joinForm = document.getElementById("join-application-form");
+const joinState = document.getElementById("join-application-state");
+const applicationsToggle = document.getElementById("applications-enabled");
+let joinApplicationsOpen = false;
+
+function setJoinState(open) {
+    joinApplicationsOpen = Boolean(open);
+    if (joinState) joinState.hidden = joinApplicationsOpen;
+    if (joinForm) joinForm.hidden = !joinApplicationsOpen;
+    if (applicationsToggle) {
+        applicationsToggle.checked = joinApplicationsOpen;
+        const label = document.getElementById("applications-toggle-label");
+        if (label) label.textContent = joinApplicationsOpen ? "OPEN" : "CLOSED";
+    }
+}
+
+async function loadJoinApplicationSetting() {
+    if (!supabaseClient) {
+        setJoinState(false);
+        controlMessage("applications-admin-message", "Supabase unavailable; applications remain closed.", true);
+        return;
+    }
+    const { data, error } = await supabaseClient.from("site_settings")
+        .select("value").eq("key", "join_applications_enabled").maybeSingle();
+    if (error) {
+        setJoinState(false);
+        controlMessage("applications-admin-message", "Could not load settings. Run join-applications.sql in Supabase; applications remain closed.", true);
+        return;
+    }
+    setJoinState(data?.value === true);
+    controlMessage("applications-admin-message", joinApplicationsOpen ? "Applications are OPEN." : "Applications are CLOSED.");
+}
+
+async function saveJoinApplicationSetting() {
+    if (!staffCanManageContent()) {
+        setJoinState(false);
+        controlMessage("applications-admin-message", "Admin or overseer permissions required.", true);
+        return;
+    }
+    const next = applicationsToggle.checked;
+    applicationsToggle.disabled = true;
+    const { error } = await supabaseClient.from("site_settings").upsert({
+        key: "join_applications_enabled", value: next, updated_by: activeStaffUser.id
+    }, { onConflict: "key" });
+    applicationsToggle.disabled = false;
+    if (error) {
+        await loadJoinApplicationSetting();
+        controlMessage("applications-admin-message", "Could not save the setting. Check the Supabase migration and policies.", true);
+        return;
+    }
+    setJoinState(next);
+    controlMessage("applications-admin-message", next ? "Applications are now OPEN." : "Applications are now CLOSED.");
+    recordControlActivity("Set team applications " + (next ? "OPEN" : "CLOSED"));
+}
+
+async function submitJoinApplication(event) {
+    event.preventDefault();
+    if (!joinApplicationsOpen) {
+        setJoinState(false);
+        return;
+    }
+    const button = joinForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+    controlMessage("join-application-message", "Submitting application…");
+    const payload = {
+        name: document.getElementById("join-name").value.trim(),
+        email: document.getElementById("join-email").value.trim(),
+        area: document.getElementById("join-area").value,
+        message: document.getElementById("join-message").value.trim(),
+        portfolio_url: document.getElementById("join-link").value.trim() || null
+    };
+    const { error } = await supabaseClient.from("join_applications").insert(payload);
+    button.disabled = false;
+    if (error) {
+        controlMessage("join-application-message", "Submission failed. Intake may have closed, or the database migration may not be installed.", true);
+        return;
+    }
+    joinForm.reset();
+    controlMessage("join-application-message", "Application received. Thank you for your interest in Team Blacklight.");
+}
+
+if (joinForm) joinForm.addEventListener("submit", submitJoinApplication);
+if (applicationsToggle) {
+    applicationsToggle.addEventListener("change", saveJoinApplicationSetting);
+    loadJoinApplicationSetting();
+}
