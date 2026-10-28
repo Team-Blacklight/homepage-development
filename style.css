@@ -1637,6 +1637,24 @@ input:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) { .collaboration-card { transition: none; } .collaboration-card:hover { transform: none; } }
 
+/* TEAM BLACKLIGHT — APPLICATION REVIEW INBOX */
+.application-inbox-heading{display:flex;align-items:end;justify-content:space-between;gap:1rem;margin:2rem 0 .5rem;padding-top:1.25rem;border-top:1px solid var(--border)}
+.application-inbox-heading h4{color:var(--cyan);letter-spacing:.08em}
+.application-record{display:flex;flex-direction:column;gap:.8rem;padding:1.2rem}
+.application-record-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.application-record h4{margin:0 0 .35rem;color:var(--text)}
+.application-record p{white-space:pre-wrap;overflow-wrap:anywhere}
+.application-record .control-record-meta{color:var(--muted);font-size:.82rem}
+.application-email,.application-portfolio{color:var(--cyan);overflow-wrap:anywhere}
+.application-message{color:var(--text)}
+.application-status{flex:0 0 auto;border:1px solid var(--border);padding:.3rem .55rem;font-size:.7rem;letter-spacing:.08em}
+.application-status.status-new{color:var(--cyan)}.application-status.status-reviewing{color:#f0c674}.application-status.status-accepted{color:var(--green)}.application-status.status-declined{color:#ff8d9c}
+.application-review-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.65rem;padding-top:.8rem;border-top:1px solid var(--border)}
+.application-review-actions label{color:var(--muted);font-size:.85rem}
+.application-review-actions select{min-height:42px;padding:.5rem;background:#080d15;border:1px solid var(--border);color:var(--text);font:inherit}
+.application-empty h4{color:var(--cyan)}.application-empty p{color:var(--muted)}
+@media(max-width:650px){.application-inbox-heading,.application-record-top{align-items:flex-start;flex-direction:column}}
+
 /* TEAM BLACKLIGHT — APPLICATION INTAKE & CONTACT DIRECTORY */
 .join-section,.contacts-section{padding:clamp(65px,8vw,100px) 10%;border-top:1px solid var(--border)}
 .join-section{background:radial-gradient(ellipse at 80% 0%,rgba(102,231,255,.07),transparent 42%),linear-gradient(135deg,rgba(184,164,255,.04),transparent 60%)}
