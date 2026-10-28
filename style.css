@@ -1574,3 +1574,7 @@ input:focus-visible {
     .policy-card p, .policy-card li { font-size: 16px; }
     .policy-index nav { columns: 1; }
 }
+
+
+/* Simulated shell output formatting */
+.terminal-pre { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); font: inherit; }
