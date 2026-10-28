@@ -699,7 +699,7 @@ function renderControlActivity() {
 }
 
 function setControlPanel(panelName) {
-    const allowed = ["overview", "projects", "store", "members", "activity"];
+    const allowed = ["overview", "projects", "store", "members", "applications", "activity"];
     if (!allowed.includes(panelName)) return;
 
     for (const panel of allowed) {
@@ -1079,6 +1079,7 @@ function setupControlConsole() {
     document.getElementById("product-form")?.addEventListener("submit", saveControlProduct);
     document.getElementById("refresh-projects")?.addEventListener("click", loadControlProjects);
     document.getElementById("refresh-products")?.addEventListener("click", loadControlProducts);
+    document.getElementById("refresh-applications")?.addEventListener("click", loadJoinApplications);
     document.getElementById("cancel-project-edit")?.addEventListener("click", resetProjectForm);
     document.getElementById("cancel-product-edit")?.addEventListener("click", resetProductForm);
     document.getElementById("clear-activity")?.addEventListener("click", () => {
@@ -1146,6 +1147,99 @@ async function saveJoinApplicationSetting() {
     setJoinState(next);
     controlMessage("applications-admin-message", next ? "Applications are now OPEN." : "Applications are now CLOSED.");
     recordControlActivity("Set team applications " + (next ? "OPEN" : "CLOSED"));
+}
+
+async function loadJoinApplications() {
+    const list = document.getElementById("applications-inbox");
+    const count = document.getElementById("application-count");
+    if (!list) return;
+    if (!staffCanManageContent()) {
+        list.replaceChildren();
+        controlMessage("applications-inbox-message", "Admin or overseer permissions required.", true);
+        return;
+    }
+    list.replaceChildren();
+    controlMessage("applications-inbox-message", "Loading applications…");
+    const { data, error } = await supabaseClient.from("join_applications")
+        .select("id,name,email,area,message,portfolio_url,status,created_at")
+        .order("created_at", { ascending: false });
+    if (error) {
+        controlMessage("applications-inbox-message", "Could not load applications. Check the schema and staff read policy.", true);
+        if (count) count.textContent = "INBOX UNAVAILABLE";
+        return;
+    }
+    const applications = data || [];
+    if (count) count.textContent = applications.length + (applications.length === 1 ? " APPLICATION" : " APPLICATIONS");
+    if (!applications.length) {
+        const empty = document.createElement("article");
+        empty.className = "control-record application-empty";
+        const title = document.createElement("h4");
+        title.textContent = "NO APPLICATIONS YET";
+        const detail = document.createElement("p");
+        detail.textContent = joinApplicationsOpen ? "Intake is open. New submissions will appear here." : "The inbox is clear. You can open intake using the toggle above.";
+        empty.append(title, detail);
+        list.append(empty);
+        controlMessage("applications-inbox-message", "Inbox loaded successfully.");
+        return;
+    }
+    for (const application of applications) {
+        const card = document.createElement("article");
+        card.className = "control-record application-record";
+        const top = document.createElement("div");
+        top.className = "application-record-top";
+        const identity = document.createElement("div");
+        const title = document.createElement("h4");
+        title.textContent = application.name || "Unnamed applicant";
+        const meta = document.createElement("p");
+        meta.className = "control-record-meta";
+        meta.textContent = (application.created_at ? new Date(application.created_at).toLocaleString() : "Date unavailable") + " · " + (application.area || "Area not provided");
+        identity.append(title, meta);
+        const badge = document.createElement("span");
+        badge.className = "application-status status-" + (application.status || "new");
+        badge.textContent = (application.status || "new").replace(/_/g, " ").toUpperCase();
+        top.append(identity, badge);
+        const email = document.createElement("a");
+        email.className = "application-email";
+        email.href = "mailto:" + application.email;
+        email.textContent = application.email || "No email provided";
+        const message = document.createElement("p");
+        message.className = "application-message";
+        message.textContent = application.message || "";
+        card.append(top, email, message);
+        if (application.portfolio_url) {
+            try {
+                const url = new URL(application.portfolio_url);
+                if (url.protocol === "https:" || url.protocol === "http:") {
+                    const link = document.createElement("a");
+                    link.href = url.href; link.target = "_blank"; link.rel = "noopener noreferrer";
+                    link.className = "application-portfolio"; link.textContent = "OPEN PORTFOLIO ↗";
+                    card.append(link);
+                }
+            } catch (_) { /* Ignore malformed optional portfolio URLs. */ }
+        }
+        const actions = document.createElement("div");
+        actions.className = "application-review-actions";
+        const label = document.createElement("label"); label.textContent = "Review status";
+        const select = document.createElement("select");
+        select.setAttribute("aria-label", "Review status for " + (application.name || "applicant"));
+        for (const [value, labelText] of [["new","New"],["reviewing","Reviewing"],["accepted","Accepted"],["declined","Declined"]]) {
+            const option = document.createElement("option"); option.value = value; option.textContent = labelText; select.append(option);
+        }
+        select.value = application.status || "new";
+        const save = document.createElement("button"); save.type = "button"; save.className = "button secondary"; save.textContent = "SAVE STATUS";
+        save.addEventListener("click", async () => {
+            if (!staffCanManageContent()) { controlMessage("applications-inbox-message", "Admin or overseer permissions required.", true); return; }
+            save.disabled = true;
+            const { error: updateError } = await supabaseClient.from("join_applications").update({ status: select.value }).eq("id", application.id);
+            save.disabled = false;
+            if (updateError) { controlMessage("applications-inbox-message", "Status update failed. Run join-applications-review.sql in Supabase and verify staff permissions.", true); return; }
+            recordControlActivity("Updated application status for " + (application.name || "applicant") + " to " + select.value);
+            controlMessage("applications-inbox-message", "Application status saved.");
+            await loadJoinApplications();
+        });
+        actions.append(label, select, save); card.append(actions); list.append(card);
+    }
+    controlMessage("applications-inbox-message", "Loaded " + applications.length + (applications.length === 1 ? " application." : " applications."));
 }
 
 async function submitJoinApplication(event) {
