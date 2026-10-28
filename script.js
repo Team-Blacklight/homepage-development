@@ -1063,6 +1063,110 @@ async function deleteControlProduct(product) {
     await loadControlProducts();
 }
 
+// TEAM BLACKLIGHT — PUBLIC PROJECT & PRODUCT CATALOGUES
+// The public site reads only records explicitly published in the staff console.
+function publicStatusLabel(status) {
+    return String(status || "planned").replace(/_/g, " ").toUpperCase();
+}
+function renderPublicEmpty(container, title, message) {
+    container.replaceChildren();
+    const card = document.createElement("article");
+    card.className = "project-card public-empty-card";
+    const heading = document.createElement("h3"); heading.textContent = title;
+    const detail = document.createElement("p"); detail.textContent = message;
+    card.append(heading, detail); container.append(card);
+}
+async function loadPublicProjects() {
+    const grid = document.getElementById("public-project-grid");
+    const message = document.getElementById("public-projects-message");
+    if (!grid) return;
+    if (!supabaseClient) {
+        renderPublicEmpty(grid, "PROJECT DATABASE OFFLINE", "Project listings are temporarily unavailable.");
+        if (message) message.textContent = "Could not connect to the project database.";
+        return;
+    }
+    const { data, error } = await supabaseClient.from("projects")
+        .select("id,title,slug,summary,description,status,created_at")
+        .eq("is_published", true).order("created_at", { ascending: false });
+    if (error) {
+        renderPublicEmpty(grid, "PROJECT DATABASE UNAVAILABLE", "Please try refreshing the page later.");
+        if (message) message.textContent = "Could not load published projects.";
+        return;
+    }
+    grid.replaceChildren();
+    if (!data || data.length === 0) {
+        renderPublicEmpty(grid, "NO PUBLIC PROJECTS", "There are no published projects at the moment.");
+        if (message) message.textContent = "Only projects marked as published in the admin console appear here.";
+        return;
+    }
+    data.forEach((project, index) => {
+        const card = document.createElement("article"); card.className = "project-card";
+        const top = document.createElement("div"); top.className = "card-top";
+        const tag = document.createElement("span"); tag.className = "tag"; tag.textContent = "TEAM BLACKLIGHT PROJECT";
+        const number = document.createElement("span"); number.className = "card-number"; number.textContent = "P-" + String(index + 1).padStart(3, "0");
+        top.append(tag, number);
+        const icon = document.createElement("div"); icon.className = "project-icon"; icon.setAttribute("aria-hidden", "true"); icon.textContent = "◈";
+        const heading = document.createElement("h3"); heading.textContent = project.title || "Untitled project";
+        const description = document.createElement("p"); description.textContent = project.summary || project.description || "Project details will be added soon.";
+        const bottom = document.createElement("div"); bottom.className = "card-bottom";
+        const status = document.createElement("span"); status.textContent = "STATUS: " + publicStatusLabel(project.status);
+        const link = document.createElement("a"); link.href = "#terminal"; link.textContent = "INSPECT ↗";
+        bottom.append(status, link); card.append(top, icon, heading, description, bottom); grid.append(card);
+    });
+    if (message) message.textContent = data.length + " published project" + (data.length === 1 ? "" : "s") + " loaded from the project database.";
+}
+function loadProductImage(imagePath, card) {
+    if (!imagePath) return;
+    const trimmed = String(imagePath).trim();
+    const safe = /^(https?:\/\/|\/|\.\/|\.\.\/|images\/)/i.test(trimmed) && !/^\/\//.test(trimmed);
+    if (!safe) return;
+    const image = document.createElement("img"); image.className = "product-image"; image.src = trimmed;
+    image.alt = ""; image.loading = "lazy";
+    image.addEventListener("error", () => image.remove(), { once: true }); card.append(image);
+}
+async function loadPublicProducts() {
+    const grid = document.getElementById("public-product-grid");
+    const message = document.getElementById("public-products-message");
+    if (!grid) return;
+    if (!supabaseClient) {
+        renderPublicEmpty(grid, "CATALOGUE OFFLINE", "Product listings are temporarily unavailable.");
+        if (message) message.textContent = "Could not connect to the product database.";
+        return;
+    }
+    const { data, error } = await supabaseClient.from("products")
+        .select("id,name,slug,description,price_cents,currency,image_path,stock_quantity,created_at")
+        .eq("is_published", true).order("created_at", { ascending: false });
+    if (error) {
+        renderPublicEmpty(grid, "CATALOGUE UNAVAILABLE", "Please try refreshing the page later.");
+        if (message) message.textContent = "Could not load published products.";
+        return;
+    }
+    grid.replaceChildren();
+    if (!data || data.length === 0) {
+        renderPublicEmpty(grid, "NO LISTED PRODUCTS", "The Team Blacklight catalogue is being prepared.");
+        if (message) message.textContent = "Only products marked as published in the admin console appear here.";
+        return;
+    }
+    data.forEach(product => {
+        const card = document.createElement("article"); card.className = "product-card";
+        loadProductImage(product.image_path, card);
+        const body = document.createElement("div"); body.className = "product-card-body";
+        const tag = document.createElement("p"); tag.className = "eyebrow"; tag.textContent = "TEAM BLACKLIGHT SUPPLY";
+        const heading = document.createElement("h3"); heading.textContent = product.name || "Unnamed product";
+        const description = document.createElement("p"); description.className = "product-description"; description.textContent = product.description || "Product details will be added soon.";
+        const currency = /^[A-Z]{3}$/.test(product.currency || "") ? product.currency : "CAD";
+        const price = document.createElement("p"); price.className = "product-price";
+        price.textContent = new Intl.NumberFormat("en-CA", { style: "currency", currency }).format((Number(product.price_cents) || 0) / 100);
+        const stock = document.createElement("p"); stock.className = "product-stock";
+        const quantity = Number(product.stock_quantity) || 0;
+        stock.textContent = quantity > 0 ? "STATUS: " + quantity + " IN STOCK" : "STATUS: DEVELOPMENT / OUT OF STOCK";
+        stock.classList.toggle("product-stock-available", quantity > 0);
+        const preview = document.createElement("span"); preview.className = "product-preview-label"; preview.textContent = "PREVIEW LISTING · PURCHASES DISABLED";
+        body.append(tag, heading, description, price, stock, preview); card.append(body); grid.append(card);
+    });
+    if (message) message.textContent = data.length + " published product" + (data.length === 1 ? "" : "s") + " loaded from the product database.";
+}
+
 function setupControlConsole() {
     if (controlEventsReady) return;
     controlEventsReady = true;
@@ -1091,6 +1195,8 @@ function setupControlConsole() {
 }
 
 setupControlConsole();
+loadPublicProjects();
+loadPublicProducts();
 
 
 // TEAM BLACKLIGHT — JOIN APPLICATIONS
