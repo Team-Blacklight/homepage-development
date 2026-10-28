@@ -473,6 +473,8 @@ if (!supabaseClient) {
         const submitButton = signupForm.querySelector('button[type="submit"]');
         submitButton.disabled = true;
         setAccountMessage("Creating your account...");
+        mfaGateInProgress = true;
+        hideStaffDashboard();
 
         try {
             const { data, error } = await supabaseClient.auth.signUp({
@@ -491,12 +493,14 @@ if (!supabaseClient) {
                 signupForm.reset();
                 await beginMfaGate(data.user);
             } else {
+                mfaGateInProgress = false;
                 setAccountMessage(
                     "Account request received. Check your email for a verification link, then log in."
                 );
                 signupForm.reset();
             }
         } catch (error) {
+            mfaGateInProgress = false;
             setAccountMessage(error.message || "Account creation failed.", true);
         } finally {
             submitButton.disabled = false;
@@ -547,18 +551,12 @@ if (!supabaseClient) {
 
     // Restore existing sessions and react to login/logout events.
     supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (event === "INITIAL_SESSION") {
-            if (session?.user) {
-                // Defer profile lookup to avoid doing additional Supabase
-                // calls inside the auth event callback.
-                setTimeout(() => loadCurrentProfile(session.user), 0);
-            } else {
-                showSignedOut();
-                setAccountMessage(
-                    "Not signed in. Create an account or log in to continue."
-                );
-            }
+        if (event === "INITIAL_SESSION" && !session?.user) {
+            showSignedOut();
+            setAccountMessage("Not signed in. Create an account or log in to continue.");
         }
+        // When a session exists, refreshSession() checks its MFA assurance level
+        // and runs the TOTP gate. Do not load the profile from this event.
 
         if (event === "SIGNED_IN" && session?.user && !mfaGateInProgress) {
             setTimeout(async () => {
