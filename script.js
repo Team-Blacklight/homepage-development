@@ -45,6 +45,8 @@ const virtualFS = {
     "/home/guest/team-blacklight/README.txt": { type: "file", mode: "-rw-r--r--", owner: "guest", group: "guest", content: "TEAM BLACKLIGHT // PUBLIC TERMINAL\nProjects: Mission Link, mOS, and experimental software.\nStatus: development.", modified: "2026-10-28 18:00" }
 };
 
+const baseVirtualFS = JSON.parse(JSON.stringify(virtualFS));
+
 function escapeHTML(value) {
     return String(value).replace(/[&<>"']/g, character => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -209,8 +211,14 @@ function runShellCommand(input) {
     }
     if (command === "clear") { terminalOutput.replaceChildren(); return ""; }
     if (command === "reset") {
-        for (const key of Object.keys(virtualFS)) if (!["/", "/bin", "/dev", "/etc", "/home", "/home/guest", "/home/guest/Desktop", "/home/guest/Documents", "/home/guest/Projects", "/home/guest/Projects/mission-link", "/home/guest/Projects/mOS", "/home/guest/team-blacklight", "/tmp", "/usr", "/usr/bin", "/var", "/home/guest/README.txt", "/home/guest/Documents/policies-draft.txt", "/home/guest/Documents/project-notes.txt", "/home/guest/Desktop/Welcome.txt", "/home/guest/team-blacklight/README.txt"].includes(key)) delete virtualFS[key];
-        shellState.cwd = shellState.env.HOME; shellState.history = []; shellState.historyIndex = 0; return "Virtual shell reset. Built-in sample files restored.";
+        Object.keys(virtualFS).forEach(key => delete virtualFS[key]);
+        Object.assign(virtualFS, JSON.parse(JSON.stringify(baseVirtualFS)));
+        shellState.cwd = shellState.env.HOME;
+        shellState.previousCwd = shellState.env.HOME;
+        shellState.history = [];
+        shellState.historyIndex = 0;
+        shellState.lastStatus = 0;
+        return "Virtual shell reset. Built-in sample files restored.";
     }
     if (command === "exit" || command === "logout") return "logout\nSession ended (simulation). Refresh the page to start a new session.";
     if (command === "sudo") return runSimulatedSudo(args);
