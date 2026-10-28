@@ -9,20 +9,91 @@ const terminalForm = document.getElementById("terminal-form");
 const terminalInput = document.getElementById("terminal-input");
 const terminalOutput = document.getElementById("terminal-output");
 
+const shellState = {
+    user: "guest",
+    host: "team-blacklight",
+    cwd: "~",
+    history: [],
+    historyIndex: 0
+};
+
 const commands = {
     help: () => `
-        <p class="terminal-system">AVAILABLE COMMANDS</p>
-        <p><span class="terminal-highlight">help</span> — Show available commands</p>
-        <p><span class="terminal-highlight">projects</span> — View the project directory</p>
-        <p><span class="terminal-highlight">about</span> — About Team Blacklight</p>
-        <p><span class="terminal-highlight">status</span> — System status report</p>
-        <p><span class="terminal-highlight">store</span> — Check the storefront</p>
-        <p><span class="terminal-highlight">contact</span> — Contact information</p>
-        <p><span class="terminal-highlight">clear</span> — Clear the terminal</p>
+        <p class="terminal-system">AVAILABLE COMMANDS // WEB SHELL</p>
+        <p><span class="terminal-highlight">help</span> — Show commands</p>
+        <p><span class="terminal-highlight">ls [path]</span> — List simulated files</p>
+        <p><span class="terminal-highlight">pwd</span> — Show current directory</p>
+        <p><span class="terminal-highlight">cd [path]</span> — Change simulated directory</p>
+        <p><span class="terminal-highlight">whoami</span> — Show session user</p>
+        <p><span class="terminal-highlight">uname [-a]</span> — Show simulated system information</p>
+        <p><span class="terminal-highlight">cat [file]</span> — Read a public sample file</p>
+        <p><span class="terminal-highlight">echo [text]</span> — Print text</p>
         <p><span class="terminal-highlight">date</span> — Display local date and time</p>
-        <p><span class="terminal-highlight">secret</span> — ...interesting choice</p>
-        <p><span class="terminal-highlight">account</span> — Open member access</p>
+        <p><span class="terminal-highlight">history</span> — Show commands in this session</p>
+        <p><span class="terminal-highlight">projects / about / status / store / contact / account</span> — Team Blacklight commands</p>
+        <p><span class="terminal-highlight">sudo [command]</span> — Explain privileged-command limits</p>
+        <p><span class="terminal-highlight">clear</span> — Clear terminal output</p>
+        <p class="terminal-system">NOTE: This is a browser simulation, not a real Linux shell.</p>
     `,
+
+    ls: (args) => {
+        const path = args[0] || shellState.cwd;
+        const files = {
+            "~": ["Desktop/", "Documents/", "Projects/", "README.txt", "team-blacklight/"],
+            "/": ["bin/", "dev/", "etc/", "home/", "tmp/", "usr/", "var/"],
+            "Projects": ["mission-link/", "mos/", "website/"],
+            "Documents": ["policies-draft.txt", "project-notes.txt"],
+            "team-blacklight": ["README.txt", "policies/", "projects/"],
+            "Desktop": ["Welcome.txt"]
+        };
+        const key = path.replace(/^\.\//, "").replace(/^\//, "");
+        const listing = files[path] || files[key] || (path === "." ? files[shellState.cwd] : null);
+        return listing
+            ? `<p>${listing.map(escapeHTML).join("&nbsp;&nbsp; ")}</p>`
+            : `<p class="terminal-error">ls: cannot access '${escapeHTML(path)}': No such file or directory (simulated)</p>`;
+    },
+
+    pwd: () => `<p>/home/guest/${escapeHTML(shellState.cwd === "~" ? "" : shellState.cwd.replace(/^\//, ""))}</p>`,
+    whoami: () => `<p>${escapeHTML(shellState.user)}</p>`,
+    uname: (args) => args.includes("-a")
+        ? "<p>Linux team-blacklight 6.x-web-sim #1 SMP x86_64 GNU/Linux (simulated)</p>"
+        : "<p>Linux</p>",
+
+    cd: (args) => {
+        const target = args[0] || "~";
+        const allowed = ["~", "/", "Desktop", "Documents", "Projects", "team-blacklight"];
+        if (target === "..") {
+            shellState.cwd = "~";
+            return "";
+        }
+        const normalized = target.replace(/^\.\//, "").replace(/^\//, "");
+        if (allowed.includes(target) || allowed.includes(normalized)) {
+            shellState.cwd = target.startsWith("/") ? target : (target === "~" ? "~" : normalized);
+            return "";
+        }
+        return `<p class="terminal-error">bash: cd: ${escapeHTML(target)}: No such directory (simulated)</p>`;
+    },
+
+    cat: (args) => {
+        const file = args[0];
+        if (!file) return '<p class="terminal-error">cat: missing file operand</p>';
+        const samples = {
+            "README.txt": "Welcome to the Team Blacklight web shell. This environment is simulated.",
+            "Welcome.txt": "SYSTEM ONLINE. Creativity has no permissions.",
+            "policies-draft.txt": "Team Blacklight policies are drafts and are not yet formally adopted.",
+            "project-notes.txt": "Projects are developed collaboratively. Record IP ownership and agreements before work begins."
+        };
+        const content = samples[file] || samples[file.split("/").pop()];
+        return content
+            ? `<pre class="terminal-pre">${escapeHTML(content)}</pre>`
+            : `<p class="terminal-error">cat: ${escapeHTML(file)}: No such file (simulated filesystem)</p>`;
+    },
+
+    echo: (args) => `<p>${escapeHTML(args.join(" "))}</p>`,
+    date: () => `<p>${escapeHTML(new Date().toLocaleString())}</p>`,
+    history: () => shellState.history.length
+        ? `<pre class="terminal-pre">${shellState.history.map((item, i) => `${i + 1}  ${escapeHTML(item)}`).join("\n")}</pre>`
+        : "<p>Command history is empty.</p>",
 
     projects: () => `
         <p class="terminal-system">PROJECT DIRECTORY // PUBLIC</p>
@@ -31,51 +102,25 @@ const commands = {
         <p>[P-003] UNKNOWN SIGNAL — Access restricted</p>
         <p>More projects are being developed.</p>
     `,
-
     about: () => `
         <p class="terminal-system">TEAM BLACKLIGHT</p>
         <p>An independent gaming and development collective.</p>
         <p>We build games, software, hardware, and experiments.</p>
         <p>Our philosophy: creativity has no permissions.</p>
     `,
-
     status: () => `
         <p class="terminal-system">SYSTEM STATUS REPORT</p>
         <p>Website: <span class="terminal-highlight">ONLINE</span></p>
         <p>Terminal: <span class="terminal-highlight">OPERATIONAL</span></p>
-        <p>Store: PREVIEW MODE</p>
-        <p>Payment processing: NOT CONFIGURED</p>
+        <p>Shell: <span class="terminal-highlight">SIMULATED</span></p>
+        <p>Store: PREVIEW MODE</p><p>Payment processing: NOT CONFIGURED</p>
         <p>Authentication: CHECK ACCOUNT PANEL</p>
     `,
-
-    store: () => `
-        <p class="terminal-system">TEAM BLACKLIGHT SUPPLY</p>
-        <p>Storefront status: PREVIEW.</p>
-        <p>Future plans include hardware and Team Blacklight products.</p>
-        <p>No purchases or payments are currently available.</p>
-    `,
-
-    contact: () => `
-        <p class="terminal-system">COMMUNICATION DIRECTORY</p>
-        <p>Official contact channels have not been configured yet.</p>
-    `,
-
-    date: () => `<p>${escapeHTML(new Date().toLocaleString())}</p>`,
-
-    secret: () => `
-        <p class="terminal-system">...SIGNAL DETECTED...</p>
-        <p>You're looking in the right places.</p>
-        <p>But this system has more layers than it shows.</p>
-        <p class="terminal-highlight">SIGNAL FRAGMENT 001 // "THE LIGHT IS NOT THE SOURCE."</p>
-    `,
-
-    account: () => `
-        <p class="terminal-system">MEMBER ACCESS</p>
-        <p>Opening the account interface...</p>
-        <p><a href="#account">ACCESS ACCOUNT PANEL ↗</a></p>
-    `
+    store: () => `<p class="terminal-system">TEAM BLACKLIGHT SUPPLY</p><p>Storefront status: PREVIEW.</p><p>No purchases or payments are currently available.</p>`,
+    contact: () => `<p class="terminal-system">COMMUNICATION DIRECTORY</p><p>Official contact channels have not been configured yet.</p>`,
+    secret: () => `<p class="terminal-system">...SIGNAL DETECTED...</p><p>You're looking in the right places.</p><p class="terminal-highlight">SIGNAL FRAGMENT 001 // "THE LIGHT IS NOT THE SOURCE."</p>`,
+    account: () => `<p class="terminal-system">MEMBER ACCESS</p><p>Opening the account interface...</p><p><a href="#account">ACCESS ACCOUNT PANEL ↗</a></p>`
 };
-
 function escapeHTML(value) {
     return String(value).replace(/[&<>"']/g, character => ({
         "&": "&amp;",
@@ -95,26 +140,50 @@ function runCommand(rawCommand) {
     const input = rawCommand.trim();
     if (!input) return;
 
+    shellState.history.push(input);
+    shellState.historyIndex = shellState.history.length;
     printToTerminal(
-        `<p><span class="terminal-highlight">guest@team-blacklight:~$</span> ${escapeHTML(input)}</p>`
+        `<p><span class="terminal-highlight">${escapeHTML(shellState.user)}@team-blacklight:${escapeHTML(shellState.cwd)}$</span> ${escapeHTML(input)}</p>`
     );
 
-    const command = input.toLowerCase();
+    const parts = input.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
+    const command = (parts.shift() || "").toLowerCase();
+    const args = parts.map(part => part.replace(/^"|"$/g, ""));
 
     if (command === "clear") {
-        terminalOutput.innerHTML = "";
+        terminalOutput.replaceChildren();
+        return;
+    }
+
+    if (command === "sudo") {
+        printToTerminal(args.length
+            ? '<p class="terminal-error">sudo: this browser terminal cannot run commands on a real computer or grant administrator privileges.</p><p>For safety, it will not collect or request your actual admin password. Run trusted system commands directly in your own Linux terminal.</p>'
+            : '<p>Usage: sudo &lt;command&gt;</p><p>This web terminal is simulated; sudo cannot elevate privileges here.</p>');
+        return;
+    }
+
+    if (command === "apt" || command === "apt-get" || command === "systemctl" ||
+        command === "reboot" || command === "shutdown" || command === "rm" ||
+        command === "chmod" || command === "chown" || command === "mount") {
+        printToTerminal('<p class="terminal-error">' + escapeHTML(command) +
+            ': this web shell does not execute operating-system commands.</p>');
+        return;
+    }
+
+    if (command === "cd") {
+        printToTerminal(commands.cd(args));
         return;
     }
 
     if (commands[command]) {
-        printToTerminal(commands[command]());
+        const result = commands[command](args);
+        if (result) printToTerminal(result);
     } else {
         printToTerminal(
-            `<p class="terminal-error">Unknown command: "${escapeHTML(input)}". Type "help" for commands.</p>`
+            `<p class="terminal-error">bash: ${escapeHTML(command)}: command not found. Type "help" for available commands.</p>`
         );
     }
 }
-
 if (terminalForm && terminalInput && terminalOutput) {
     terminalForm.addEventListener("submit", event => {
         event.preventDefault();
