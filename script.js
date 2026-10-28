@@ -4,7 +4,8 @@
 // ============================================
 // TEAM BLACKLIGHT — TERMINAL SIMULATOR
 // ============================================
-// A small, fictional Linux-style terminal. Commands never access the visitor's device.
+// A fictional Linux-style terminal with a few hidden Team Blacklight lore trails.
+// All commands run locally against this simulator; nothing reaches the visitor's OS.
 
 const terminalForm = document.getElementById("terminal-form");
 const terminalInput = document.getElementById("terminal-input");
@@ -12,12 +13,32 @@ const terminalOutput = document.getElementById("terminal-output");
 
 const terminalHistory = [];
 let terminalHistoryIndex = 0;
+let terminalClearance = false;
 
 const terminalFiles = {
-    "README.txt": "Welcome to the Team Blacklight terminal.\nThis is a small Linux-style simulation running in your browser.\nTry: help, ls, cat README.txt, uname -a, sudo apt update, status, projects.",
+    "README.txt": "Welcome to the Team Blacklight terminal.\nThis is a Linux-style simulation running in your browser.\nTry: help, ls, cat README.txt, uname -a, status, projects.",
     "Documents/policies-draft.txt": "Team Blacklight policies are drafts and have not been formally adopted.",
     "Documents/project-notes.txt": "Build collaboratively. Agree on credit, ownership, and compensation before work begins.",
     "team-blacklight/README.txt": "TEAM BLACKLIGHT // PUBLIC TERMINAL\nProjects: Mission Link, mOS, and experimental software.\nStatus: development."
+};
+
+const terminalClassified = {
+    "/etc/blacklight/manifest.enc": [
+        "TB // RESTRICTED MANIFEST",
+        "Cipher: TB-7 / local simulation",
+        "Payload: [ENCRYPTED]",
+        "Routing note: the signal is not coming from the public network.",
+        "Fragment: THE LIGHT IS NOT THE SOURCE.",
+        "End of recovered text."
+    ].join("\n"),
+    "/etc/blacklight/transmission.log": [
+        "[03:17:08] relay handshake accepted",
+        "[03:17:09] source identity: WITHHELD",
+        "[03:17:11] packet 001 received",
+        "[03:17:11] payload status: ENCRYPTED",
+        "[03:17:12] destination: UNKNOWN",
+        "[SYSTEM] further records require elevated clearance"
+    ].join("\n")
 };
 
 function terminalEscape(value) {
@@ -39,25 +60,30 @@ function terminalHelp() {
     return [
         "TEAM BLACKLIGHT // LINUX SHELL SIMULATOR",
         "",
-        "  help                 Show available commands",
-        "  ls [-la]              List sample files",
-        "  cat FILE              Read a sample file",
-        "  uname [-a]            Show simulated system information",
-        "  sudo apt update       Simulate refreshing package lists",
+        "  help                  Show available commands",
+        "  ls [-la]               List public sample files",
+        "  cat FILE               Read a public sample file",
+        "  uname [-a]             Show simulated system information",
+        "  sudo apt update        Simulate refreshing package lists",
         "  sudo apt install NAME Preview a package installation",
-        "  status                Show website/system status",
-        "  projects              List Team Blacklight projects",
-        "  history               Show commands entered this session",
-        "  clear                 Clear the terminal",
+        "  sudo projects          View restricted project metadata",
+        "  sudo ls /etc/blacklight List restricted records",
+        "  sudo cat PATH          Read a restricted record",
+        "  status                 Show system status",
+        "  projects               List public projects",
+        "  secret                 Inspect an anomalous signal",
+        "  history                Show commands entered this session",
+        "  clear                  Clear the terminal",
         "",
-        "This is a browser simulation. It cannot run real commands,",
-        "install software, access your computer, or accept passwords."
+        "Hint: not every transmission is meant for public access.",
+        "This is a simulation. No real commands or passwords are used."
     ].join("\n");
 }
 
 function terminalRun(raw) {
     const input = raw.trim();
     if (!input) return;
+
     terminalHistory.push(input);
     terminalHistoryIndex = terminalHistory.length;
 
@@ -69,37 +95,38 @@ function terminalRun(raw) {
     const command = args.shift();
     let result = "";
 
-    switch (command) {
-        case "help":
-            result = terminalHelp();
-            break;
-        case "clear":
-            terminalOutput.replaceChildren();
-            break;
-        case "ls": {
-            const showHidden = args.some(arg => ["-la", "-al", "-a", "-lah", "-l"].includes(arg));
-            const names = ["Documents/", "README.txt", "team-blacklight/"];
-            result = showHidden ? "total 3\ndrwxr-xr-x  2 guest guest 4096 Documents/\n-rw-r--r--  1 guest guest  190 README.txt\ndrwxr-xr-x  2 guest guest 4096 team-blacklight/" : names.join("    ");
-            break;
-        }
-        case "cat": {
-            if (!args.length) result = "cat: missing file operand";
-            else result = args.map(file => Object.prototype.hasOwnProperty.call(terminalFiles, file)
-                ? terminalFiles[file]
-                : "cat: " + file + ": No such file or directory").join("\n");
-            break;
-        }
-        case "uname":
-            result = args.includes("-a")
-                ? "Linux team-blacklight 6.8.0-tbl-websim #1 SMP x86_64 GNU/Linux (simulated)"
-                : "Linux";
-            break;
-        case "sudo": {
-            if (args[0] !== "apt") {
-                result = "sudo: only the simulated apt commands are supported here. No password is needed or collected.";
-                break;
+    if (command === "sudo") {
+        const elevatedCommand = args.shift();
+        if (!elevatedCommand) {
+            result = "usage: sudo COMMAND\nSimulation only — no administrator password is needed or accepted.";
+        } else if (elevatedCommand === "projects") {
+            terminalClearance = true;
+            result = [
+                "TEAM BLACKLIGHT // PROJECT DIRECTORY",
+                "[P-001] mOS — compact device OS concept",
+                "[P-002] Mission Link — LoRa mesh networking",
+                "[P-003] UNKNOWN SIGNAL — TRANSMISSION ENCRYPTED",
+                "",
+                "Clearance accepted (simulated). Metadata only; payload remains encrypted.",
+                "Hint: inspect /etc/blacklight/ for recovered records."
+            ].join("\n");
+        } else if (elevatedCommand === "ls" && args[0] === "/etc/blacklight") {
+            terminalClearance = true;
+            result = "manifest.enc\ntransmission.log\n(Restricted directory listing; simulated clearance.)";
+        } else if (elevatedCommand === "cat") {
+            const path = args[0] || "";
+            if (!terminalClassified[path]) {
+                result = "sudo: cannot read '" + path + "': No such restricted file.\nTry: sudo cat /etc/blacklight/manifest.enc";
+            } else {
+                terminalClearance = true;
+                result = terminalClassified[path];
+                if (path.endsWith("transmission.log")) result += "\n\n[NOTE] A second packet appears to be missing.";
             }
-            const action = args[1];
+        } else if (elevatedCommand === "status") {
+            terminalClearance = true;
+            result = "Website: ONLINE\nTerminal: OPERATIONAL\nPublic services: NOMINAL\nUnlisted relay: RESPONDING\nLast signal: 03:17:11\nPayload: ENCRYPTED";
+        } else if (elevatedCommand === "apt") {
+            const action = args[0];
             if (action === "update") {
                 result = [
                     "Hit:1 https://packages.team-blacklight.invalid stable InRelease",
@@ -109,29 +136,83 @@ function terminalRun(raw) {
                     "All simulated package lists are up to date."
                 ].join("\n");
             } else if (action === "install") {
-                const packages = args.slice(2).filter(name => !name.startsWith("-"));
+                const packages = args.slice(1).filter(name => !name.startsWith("-"));
                 result = packages.length
                     ? "Package preview: " + packages.join(", ") + "\nSimulation only — no software was installed."
                     : "E: No package specified. Try: sudo apt install <package>";
             } else {
                 result = "Supported simulated package commands:\n  sudo apt update\n  sudo apt install <package>";
             }
-            break;
+        } else {
+            result = "sudo: command not available in this simulation. Type 'help' for supported elevated commands.";
         }
-        case "apt":
-            result = "Permission denied. Try a supported simulated command with sudo, such as: sudo apt update";
-            break;
-        case "status":
-            result = "Website: ONLINE\nTerminal: OPERATIONAL\nShell: SIMULATED\nStore: PREVIEW MODE\nPayments: NOT CONFIGURED";
-            break;
-        case "projects":
-            result = "TEAM BLACKLIGHT // PROJECT DIRECTORY\n• Mission Link — LoRa mesh networking\n• mOS — compact device OS concept\n• Experimental software and games";
-            break;
-        case "history":
-            result = terminalHistory.map((item, index) => String(index + 1).padStart(3) + "  " + item).join("\n");
-            break;
-        default:
-            result = command + ": command not found. Type 'help' to see available commands.";
+    } else {
+        switch (command) {
+            case "help":
+                result = terminalHelp();
+                break;
+            case "clear":
+                terminalOutput.replaceChildren();
+                break;
+            case "ls": {
+                const path = args.find(arg => !arg.startsWith("-")) || "~";
+                if (path === "/etc/blacklight" || path === "/etc" || path === "/") {
+                    result = "Permission denied: restricted system path.";
+                } else if (path === "~" || path === "." || path === "/home/guest") {
+                    result = args.some(arg => ["-la", "-al", "-a", "-lah", "-l"].includes(arg))
+                        ? "total 3\ndrwxr-xr-x  2 guest guest 4096 Documents/\n-rw-r--r--  1 guest guest  190 README.txt\ndrwxr-xr-x  2 guest guest 4096 team-blacklight/"
+                        : "Documents/    README.txt    team-blacklight/";
+                } else if (path === "Documents" || path === "Documents/") {
+                    result = "policies-draft.txt    project-notes.txt";
+                } else if (path === "team-blacklight" || path === "team-blacklight/") {
+                    result = "README.txt";
+                } else {
+                    result = "ls: cannot access '" + path + "': No such file or directory";
+                }
+                break;
+            }
+            case "cat": {
+                if (!args.length) result = "cat: missing file operand";
+                else result = args.map(file => Object.prototype.hasOwnProperty.call(terminalFiles, file)
+                    ? terminalFiles[file]
+                    : "cat: " + file + ": No such file or directory").join("\n");
+                break;
+            }
+            case "uname":
+                result = args.includes("-a")
+                    ? "Linux team-blacklight 6.8.0-tbl-websim #1 SMP x86_64 GNU/Linux (simulated)"
+                    : "Linux";
+                break;
+            case "apt":
+                result = "Permission denied. Try: sudo apt update";
+                break;
+            case "status":
+                result = "Website: ONLINE\nTerminal: OPERATIONAL\nShell: SIMULATED\nStore: PREVIEW MODE\nPayments: NOT CONFIGURED";
+                break;
+            case "projects":
+                result = [
+                    "TEAM BLACKLIGHT // PROJECT DIRECTORY",
+                    "[P-001] mOS — compact device OS concept",
+                    "[P-002] Mission Link — LoRa mesh networking",
+                    "[P-003] UNKNOWN SIGNAL — [TRANSMISSION ENCRYPTED]"
+                ].join("\n");
+                break;
+            case "secret":
+                result = [
+                    "...SIGNAL DETECTED...",
+                    "A packet arrived without a sender.",
+                    "The public log says nothing happened at 03:17.",
+                    "The restricted log says otherwise.",
+                    "",
+                    "Fragment 001 // THE LIGHT IS NOT THE SOURCE."
+                ].join("\n");
+                break;
+            case "history":
+                result = terminalHistory.map((item, index) => String(index + 1).padStart(3) + "  " + item).join("\n");
+                break;
+            default:
+                result = command + ": command not found. Type 'help' to see available commands.";
+        }
     }
 
     terminalWrite(result);
@@ -158,7 +239,7 @@ if (terminalForm && terminalInput && terminalOutput) {
         } else if (event.key === "Tab") {
             event.preventDefault();
             const partial = terminalInput.value.trim().split(/\s+/).pop() || "";
-            const commands = ["help", "ls", "cat", "uname", "sudo", "apt", "status", "projects", "history", "clear"];
+            const commands = ["help", "ls", "cat", "uname", "sudo", "apt", "status", "projects", "secret", "history", "clear"];
             const matches = commands.filter(item => item.startsWith(partial));
             if (matches.length === 1) terminalInput.value = terminalInput.value.slice(0, terminalInput.value.lastIndexOf(partial)) + matches[0] + " ";
             else if (matches.length > 1) terminalWrite(matches.join("    "), "terminal-system");
