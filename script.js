@@ -2,8 +2,10 @@
 "use strict";
 
 // ============================================
-// TEAM BLACKLIGHT — TERMINAL
+// TEAM BLACKLIGHT — LINUX-STYLE SHELL SIMULATOR
 // ============================================
+// Everything in this section runs against an in-memory virtual filesystem.
+// No command is sent to the visitor's actual computer.
 
 const terminalForm = document.getElementById("terminal-form");
 const terminalInput = document.getElementById("terminal-input");
@@ -12,184 +14,434 @@ const terminalOutput = document.getElementById("terminal-output");
 const shellState = {
     user: "guest",
     host: "team-blacklight",
-    cwd: "~",
+    cwd: "/home/guest",
     history: [],
-    historyIndex: 0
+    historyIndex: 0,
+    env: { HOME: "/home/guest", USER: "guest", SHELL: "/bin/bash", TERM: "xterm-256color", LANG: "en_CA.UTF-8", PATH: "/usr/local/bin:/usr/bin:/bin" },
+    lastStatus: 0
 };
 
-const commands = {
-    help: () => `
-        <p class="terminal-system">AVAILABLE COMMANDS // WEB SHELL</p>
-        <p><span class="terminal-highlight">help</span> — Show commands</p>
-        <p><span class="terminal-highlight">ls [path]</span> — List simulated files</p>
-        <p><span class="terminal-highlight">pwd</span> — Show current directory</p>
-        <p><span class="terminal-highlight">cd [path]</span> — Change simulated directory</p>
-        <p><span class="terminal-highlight">whoami</span> — Show session user</p>
-        <p><span class="terminal-highlight">uname [-a]</span> — Show simulated system information</p>
-        <p><span class="terminal-highlight">cat [file]</span> — Read a public sample file</p>
-        <p><span class="terminal-highlight">echo [text]</span> — Print text</p>
-        <p><span class="terminal-highlight">date</span> — Display local date and time</p>
-        <p><span class="terminal-highlight">history</span> — Show commands in this session</p>
-        <p><span class="terminal-highlight">projects / about / status / store / contact / account</span> — Team Blacklight commands</p>
-        <p><span class="terminal-highlight">sudo [command]</span> — Explain privileged-command limits</p>
-        <p><span class="terminal-highlight">clear</span> — Clear terminal output</p>
-        <p class="terminal-system">NOTE: This is a browser simulation, not a real Linux shell.</p>
-    `,
-
-    ls: (args) => {
-        const path = args[0] || shellState.cwd;
-        const files = {
-            "~": ["Desktop/", "Documents/", "Projects/", "README.txt", "team-blacklight/"],
-            "/": ["bin/", "dev/", "etc/", "home/", "tmp/", "usr/", "var/"],
-            "Projects": ["mission-link/", "mos/", "website/"],
-            "Documents": ["policies-draft.txt", "project-notes.txt"],
-            "team-blacklight": ["README.txt", "policies/", "projects/"],
-            "Desktop": ["Welcome.txt"]
-        };
-        const key = path.replace(/^\.\//, "").replace(/^\//, "");
-        const listing = files[path] || files[key] || (path === "." ? files[shellState.cwd] : null);
-        return listing
-            ? `<p>${listing.map(escapeHTML).join("&nbsp;&nbsp; ")}</p>`
-            : `<p class="terminal-error">ls: cannot access '${escapeHTML(path)}': No such file or directory (simulated)</p>`;
-    },
-
-    pwd: () => `<p>/home/guest/${escapeHTML(shellState.cwd === "~" ? "" : shellState.cwd.replace(/^\//, ""))}</p>`,
-    whoami: () => `<p>${escapeHTML(shellState.user)}</p>`,
-    uname: (args) => args.includes("-a")
-        ? "<p>Linux team-blacklight 6.x-web-sim #1 SMP x86_64 GNU/Linux (simulated)</p>"
-        : "<p>Linux</p>",
-
-    cd: (args) => {
-        const target = args[0] || "~";
-        const allowed = ["~", "/", "Desktop", "Documents", "Projects", "team-blacklight"];
-        if (target === "..") {
-            shellState.cwd = "~";
-            return "";
-        }
-        const normalized = target.replace(/^\.\//, "").replace(/^\//, "");
-        if (allowed.includes(target) || allowed.includes(normalized)) {
-            shellState.cwd = target.startsWith("/") ? target : (target === "~" ? "~" : normalized);
-            return "";
-        }
-        return `<p class="terminal-error">bash: cd: ${escapeHTML(target)}: No such directory (simulated)</p>`;
-    },
-
-    cat: (args) => {
-        const file = args[0];
-        if (!file) return '<p class="terminal-error">cat: missing file operand</p>';
-        const samples = {
-            "README.txt": "Welcome to the Team Blacklight web shell. This environment is simulated.",
-            "Welcome.txt": "SYSTEM ONLINE. Creativity has no permissions.",
-            "policies-draft.txt": "Team Blacklight policies are drafts and are not yet formally adopted.",
-            "project-notes.txt": "Projects are developed collaboratively. Record IP ownership and agreements before work begins."
-        };
-        const content = samples[file] || samples[file.split("/").pop()];
-        return content
-            ? `<pre class="terminal-pre">${escapeHTML(content)}</pre>`
-            : `<p class="terminal-error">cat: ${escapeHTML(file)}: No such file (simulated filesystem)</p>`;
-    },
-
-    echo: (args) => `<p>${escapeHTML(args.join(" "))}</p>`,
-    date: () => `<p>${escapeHTML(new Date().toLocaleString())}</p>`,
-    history: () => shellState.history.length
-        ? `<pre class="terminal-pre">${shellState.history.map((item, i) => `${i + 1}  ${escapeHTML(item)}`).join("\n")}</pre>`
-        : "<p>Command history is empty.</p>",
-
-    projects: () => `
-        <p class="terminal-system">PROJECT DIRECTORY // PUBLIC</p>
-        <p>[P-001] mOS — Pocket-sized OS concept</p>
-        <p>[P-002] Mission Link — LoRa mesh networking</p>
-        <p>[P-003] UNKNOWN SIGNAL — Access restricted</p>
-        <p>More projects are being developed.</p>
-    `,
-    about: () => `
-        <p class="terminal-system">TEAM BLACKLIGHT</p>
-        <p>An independent gaming and development collective.</p>
-        <p>We build games, software, hardware, and experiments.</p>
-        <p>Our philosophy: creativity has no permissions.</p>
-    `,
-    status: () => `
-        <p class="terminal-system">SYSTEM STATUS REPORT</p>
-        <p>Website: <span class="terminal-highlight">ONLINE</span></p>
-        <p>Terminal: <span class="terminal-highlight">OPERATIONAL</span></p>
-        <p>Shell: <span class="terminal-highlight">SIMULATED</span></p>
-        <p>Store: PREVIEW MODE</p><p>Payment processing: NOT CONFIGURED</p>
-        <p>Authentication: CHECK ACCOUNT PANEL</p>
-    `,
-    store: () => `<p class="terminal-system">TEAM BLACKLIGHT SUPPLY</p><p>Storefront status: PREVIEW.</p><p>No purchases or payments are currently available.</p>`,
-    contact: () => `<p class="terminal-system">COMMUNICATION DIRECTORY</p><p>Official contact channels have not been configured yet.</p>`,
-    secret: () => `<p class="terminal-system">...SIGNAL DETECTED...</p><p>You're looking in the right places.</p><p class="terminal-highlight">SIGNAL FRAGMENT 001 // "THE LIGHT IS NOT THE SOURCE."</p>`,
-    account: () => `<p class="terminal-system">MEMBER ACCESS</p><p>Opening the account interface...</p><p><a href="#account">ACCESS ACCOUNT PANEL ↗</a></p>`
+const virtualFS = {
+    "/": { type: "dir", mode: "drwxr-xr-x", owner: "root", group: "root", modified: "2026-10-28 18:00" },
+    "/bin": { type: "dir", mode: "drwxr-xr-x", owner: "root", group: "root", modified: "2026-10-28 18:00" },
+    "/dev": { type: "dir", mode: "drwxr-xr-x", owner: "root", group: "root", modified: "2026-10-28 18:00" },
+    "/etc": { type: "dir", mode: "drwxr-xr-x", owner: "root", group: "root", modified: "2026-10-28 18:00" },
+    "/home": { type: "dir", mode: "drwxr-xr-x", owner: "root", group: "root", modified: "2026-10-28 18:00" },
+    "/home/guest": { type: "dir", mode: "drwxr-x---", owner: "guest", group: "guest", modified: "2026-10-28 18:00" },
+    "/home/guest/Desktop": { type: "dir", mode: "drwxr-xr-x", owner: "guest", group: "guest", modified: "2026-10-28 18:00" },
+    "/home/guest/Documents": { type: "dir", mode: "drwxr-xr-x", owner: "guest", group: "guest", modified: "2026-10-28 18:00" },
+    "/home/guest/Projects": { type: "dir", mode: "drwxr-xr-x", owner: "guest", group: "guest", modified: "2026-10-28 18:00" },
+    "/home/guest/Projects/mission-link": { type: "dir", mode: "drwxr-xr-x", owner: "guest", group: "guest", modified: "2026-10-28 18:00" },
+    "/home/guest/Projects/mOS": { type: "dir", mode: "drwxr-xr-x", owner: "guest", group: "guest", modified: "2026-10-28 18:00" },
+    "/home/guest/team-blacklight": { type: "dir", mode: "drwxr-xr-x", owner: "guest", group: "guest", modified: "2026-10-28 18:00" },
+    "/tmp": { type: "dir", mode: "drwxrwxrwt", owner: "root", group: "root", modified: "2026-10-28 18:00" },
+    "/usr": { type: "dir", mode: "drwxr-xr-x", owner: "root", group: "root", modified: "2026-10-28 18:00" },
+    "/usr/bin": { type: "dir", mode: "drwxr-xr-x", owner: "root", group: "root", modified: "2026-10-28 18:00" },
+    "/var": { type: "dir", mode: "drwxr-xr-x", owner: "root", group: "root", modified: "2026-10-28 18:00" },
+    "/home/guest/README.txt": { type: "file", mode: "-rw-r--r--", owner: "guest", group: "guest", content: "Welcome to the Team Blacklight shell simulator.\nThis is a virtual Linux-like environment running in your browser.\nTry: ls -la, uname -a, or help.", modified: "2026-10-28 18:00" },
+    "/home/guest/Documents/policies-draft.txt": { type: "file", mode: "-rw-r--r--", owner: "guest", group: "guest", content: "Team Blacklight policies are drafts and are not yet formally adopted.\nReview and approve policies before treating them as official.", modified: "2026-10-28 18:00" },
+    "/home/guest/Documents/project-notes.txt": { type: "file", mode: "-rw-r--r--", owner: "guest", group: "guest", content: "Projects are developed collaboratively.\nRecord IP ownership and agreements before work begins.", modified: "2026-10-28 18:00" },
+    "/home/guest/Desktop/Welcome.txt": { type: "file", mode: "-rw-r--r--", owner: "guest", group: "guest", content: "SYSTEM ONLINE. Creativity has no permissions.\nWelcome to Team Blacklight.", modified: "2026-10-28 18:00" },
+    "/home/guest/team-blacklight/README.txt": { type: "file", mode: "-rw-r--r--", owner: "guest", group: "guest", content: "TEAM BLACKLIGHT // PUBLIC TERMINAL\nProjects: Mission Link, mOS, and experimental software.\nStatus: development.", modified: "2026-10-28 18:00" }
 };
+
 function escapeHTML(value) {
     return String(value).replace(/[&<>"']/g, character => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     })[character]);
 }
 
-function printToTerminal(html) {
+function terminalPrint(text, className = "") {
+    const p = document.createElement("p");
+    if (className) p.className = className;
+    p.textContent = String(text);
+    terminalOutput.appendChild(p);
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+}
+
+function terminalPre(text, className = "") {
+    const pre = document.createElement("pre");
+    pre.className = "terminal-pre" + (className ? " " + className : "");
+    pre.textContent = String(text);
+    terminalOutput.appendChild(pre);
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+}
+
+function terminalHTML(html) {
     terminalOutput.insertAdjacentHTML("beforeend", html);
     terminalOutput.scrollTop = terminalOutput.scrollHeight;
+}
+
+function tokenizeShell(line) {
+    const tokens = [];
+    let token = "", quote = null, escaped = false, active = false;
+    for (const ch of line) {
+        if (escaped) { token += ch; escaped = false; active = true; continue; }
+        if (ch === "\\" && quote !== "'") { escaped = true; active = true; continue; }
+        if ((ch === "'" || ch === '"')) {
+            if (!quote) { quote = ch; active = true; continue; }
+            if (quote === ch) { quote = null; continue; }
+        }
+        if (/\s/.test(ch) && !quote) {
+            if (active) { tokens.push(token); token = ""; active = false; }
+        } else { token += ch; active = true; }
+    }
+    if (escaped) token += "\\";
+    if (active) tokens.push(token);
+    return tokens;
+}
+
+function normalizePath(path) {
+    if (!path || path === "~") return shellState.env.HOME;
+    if (path.startsWith("~/")) path = shellState.env.HOME + path.slice(1);
+    const joined = path.startsWith("/") ? path : shellState.cwd + "/" + path;
+    const stack = [];
+    for (const part of joined.split("/")) {
+        if (!part || part === ".") continue;
+        if (part === "..") stack.pop();
+        else stack.push(part);
+    }
+    return "/" + stack.join("/");
+}
+
+function nodeAt(path) { return virtualFS[normalizePath(path)]; }
+function parentPath(path) { const p = normalizePath(path); const i = p.lastIndexOf("/"); return i <= 0 ? "/" : p.slice(0, i); }
+function baseName(path) { return normalizePath(path).split("/").pop() || "/"; }
+function childrenOf(path) {
+    const dir = normalizePath(path);
+    const prefix = dir === "/" ? "/" : dir + "/";
+    return Object.keys(virtualFS).filter(key => key.startsWith(prefix) && !key.slice(prefix.length).includes("/"));
+}
+function ensureParent(path) {
+    const parent = parentPath(path);
+    return virtualFS[parent] && virtualFS[parent].type === "dir";
+}
+function readVirtualFile(path) {
+    const key = normalizePath(path), node = virtualFS[key];
+    if (!node) throw new Error("No such file or directory");
+    if (node.type === "dir") throw new Error("Is a directory");
+    return node.content || "";
+}
+function outputListing(path, args) {
+    const long = args.some(a => a === "-l" || a === "-la" || a === "-al" || a === "-lah" || a === "-lh" || a === "--long");
+    const all = args.some(a => a.includes("a") && a.startsWith("-")) || args.includes("--all");
+    const human = args.some(a => a.includes("h") && a.startsWith("-"));
+    const entries = childrenOf(path).map(key => ({ key, node: virtualFS[key], name: baseName(key) }));
+    if (all) entries.unshift({ key: normalizePath(path) + "/..", node: virtualFS[parentPath(path)], name: ".." }, { key: normalizePath(path) + "/.", node: virtualFS[normalizePath(path)], name: "." });
+    entries.sort((a,b) => a.name.localeCompare(b.name));
+    if (!long) return entries.map(e => e.name + (e.node?.type === "dir" ? "/" : "")).join("    ") || "";
+    return entries.map(e => {
+        const n = e.node || {};
+        const size = n.type === "dir" ? (human ? "4.0K" : "4096") : String((n.content || "").length);
+        return [n.mode || "?????????", "1", n.owner || "guest", n.group || "guest", size.padStart(5), n.modified || "2026-10-28 18:00", e.name + (n.type === "dir" ? "/" : "")].join("  ");
+    }).join("\n");
+}
+
+function shellHelp() {
+    return [
+        "GNU bash-like web simulator — commands operate on a virtual filesystem only.",
+        "",
+        "FILES:     ls [-lah] [PATH]   cd [DIR]   pwd   tree [PATH]   stat FILE",
+        "           cat FILE...        less FILE   head [-n N] FILE   tail [-n N] FILE",
+        "           touch FILE...      mkdir [-p] DIR...   cp [-r] SRC DEST",
+        "           mv SRC DEST        rm [-r] FILE...     find [PATH] [-name PATTERN]",
+        "           file FILE...       grep [-in] PATTERN FILE...   wc [-lwm] FILE...",
+        "           chmod MODE FILE    (simulated metadata only)",
+        "SYSTEM:    whoami   id   hostname   uname [-a|-r|-s|-m]",
+        "           date   uptime   ps [aux]   df [-h]   free [-h]   env",
+        "           echo TEXT   printf FORMAT [ARGS...]   history   clear",
+        "PACKAGES:  sudo apt update   sudo apt list --installed   sudo apt install PACKAGE",
+        "           sudo apt remove PACKAGE   sudo systemctl status SERVICE",
+        "TEAM:      projects   about   status   store   contact   account   secret",
+        "SHELL:     help [COMMAND]   exit   reset",
+        "",
+        "FLAGS are supported for common commands. This is a simulation: no real OS access,",
+        "network access, package installation, or administrator privileges are available."
+    ].join("\n");
+}
+
+function runSimulatedSudo(args) {
+    if (!args.length) return "usage: sudo COMMAND\nThis is a simulation; no real administrator password is needed or accepted.";
+    const command = args[0];
+    const rest = args.slice(1);
+    if (command === "apt" || command === "apt-get") {
+        const sub = rest[0] || "";
+        if (sub === "update") return [
+            "[sudo] password for guest: (simulated authentication accepted)",
+            "Hit:1 https://packages.team-blacklight.invalid stable InRelease",
+            "Hit:2 https://archive.ubuntu.invalid noble InRelease",
+            "Reading package lists... Done",
+            "Building dependency tree... Done",
+            "Reading state information... Done",
+            "All simulated package indexes are up to date."
+        ].join("\n");
+        if (sub === "list" && rest.includes("--installed")) return "Listing... Done\nbash-sim-base/stable 1.0 all [installed]\nteam-blacklight-shell/stable 0.4 all [installed]";
+        if (sub === "install" || sub === "remove" || sub === "purge") {
+            const packages = rest.slice(1).filter(a => !a.startsWith("-"));
+            if (!packages.length) return "E: No package specified.";
+            return "[sudo] password for guest: (simulated authentication accepted)\n" +
+                (sub === "install" ? "The following NEW packages would be installed: " : "The following packages would be removed: ") +
+                packages.join(" ") + "\nSimulation only: no packages were changed.";
+        }
+        return "apt " + rest.join(" ") + "\nTry: sudo apt update | sudo apt list --installed | sudo apt install nano";
+    }
+    if (command === "systemctl") return rest[0] === "status"
+        ? "● " + (rest[1] || "example.service") + " - Simulated service\n   Loaded: loaded (virtual unit; simulated)\n   Active: active (running) since Wed 2026-10-28 18:00:00 PDT\n   Status: no real service was queried."
+        : "systemctl: simulated only. Try: sudo systemctl status ssh";
+    if (command === "whoami") return "root";
+    if (command === "id") return "uid=0(root) gid=0(root) groups=0(root) (simulated)";
+    return "sudo: " + command + ": command not available in the simulator\nNo real command was executed and no password was collected.";
+}
+
+function runShellCommand(input) {
+    const args = tokenizeShell(input);
+    if (!args.length) return;
+    const command = args.shift();
+    const flags = args.filter(a => a.startsWith("-"));
+    const operands = args.filter(a => !a.startsWith("-"));
+    const fail = message => { shellState.lastStatus = 1; return message; };
+    const now = new Date();
+    const fileArgs = args.filter(a => !a.startsWith("-") && !/^\d+$/.test(a));
+
+    if (command === "help" || command === "man") {
+        if (command === "man" && args[0]) return "Manual page for " + args[0] + " (simulated).\nType help for supported commands and flags.";
+        return shellHelp();
+    }
+    if (command === "clear") { terminalOutput.replaceChildren(); return ""; }
+    if (command === "reset") {
+        for (const key of Object.keys(virtualFS)) if (!["/", "/bin", "/dev", "/etc", "/home", "/home/guest", "/home/guest/Desktop", "/home/guest/Documents", "/home/guest/Projects", "/home/guest/Projects/mission-link", "/home/guest/Projects/mOS", "/home/guest/team-blacklight", "/tmp", "/usr", "/usr/bin", "/var", "/home/guest/README.txt", "/home/guest/Documents/policies-draft.txt", "/home/guest/Documents/project-notes.txt", "/home/guest/Desktop/Welcome.txt", "/home/guest/team-blacklight/README.txt"].includes(key)) delete virtualFS[key];
+        shellState.cwd = shellState.env.HOME; shellState.history = []; shellState.historyIndex = 0; return "Virtual shell reset. Built-in sample files restored.";
+    }
+    if (command === "exit" || command === "logout") return "logout\nSession ended (simulation). Refresh the page to start a new session.";
+    if (command === "sudo") return runSimulatedSudo(args);
+    if (command === "pwd") return shellState.cwd;
+    if (command === "whoami") return shellState.user;
+    if (command === "hostname") return shellState.host;
+    if (command === "id") return "uid=1000(guest) gid=1000(guest) groups=1000(guest),27(sudo-sim)";
+    if (command === "uname") {
+        if (args.includes("-r")) return "6.8.0-tbl-websim";
+        if (args.includes("-m")) return "x86_64";
+        if (args.includes("-s")) return "Linux";
+        return args.includes("-a") ? "Linux team-blacklight 6.8.0-tbl-websim #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux (simulated)" : "Linux";
+    }
+    if (command === "date") return now.toString();
+    if (command === "uptime") return " " + now.toLocaleTimeString() + " up 2 days, 4:12, 1 user, load average: 0.08, 0.12, 0.10 (simulated)";
+    if (command === "ps") return args.some(a => a.includes("a")) || args.includes("aux")
+        ? "USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nroot         1  0.0  0.1  18000  8200 ?        Ss   18:00   0:01 /sbin/init (simulated)\nguest      214  0.2  0.4  32000 12000 pts/0    Ss   18:01   0:00 bash\nguest      229  0.0  0.1  12000  3400 pts/0    R+   18:02   0:00 ps aux" : "  PID TTY          TIME CMD\n  214 pts/0    00:00:00 bash\n  229 pts/0    00:00:00 ps";
+    if (command === "df") return "Filesystem      " + (args.includes("-h") ? "Size  Used Avail Use% Mounted on\nwebsim-root       8.0G  2.1G  5.9G  27% /\nwebsim-home      20.0G  1.4G 18.6G   7% /home" : "1K-blocks     Used Available Use% Mounted on\n8388608      2202009   6186599  27% /\n20971520     1468006  19503514   7% /home") + "\n(simulated)";
+    if (command === "free") return args.includes("-h")
+        ? "               total        used        free      shared  buff/cache   available\nMem:           7.7Gi       1.2Gi       4.8Gi        64Mi       1.7Gi       6.1Gi\nSwap:          2.0Gi          0B       2.0Gi\n(simulated)" :
+          "              total        used        free      shared  buff/cache   available\nMem:        8074032     1250000     5030000       64000     1794032     6380000\nSwap:       2097148           0     2097148\n(simulated)";
+    if (command === "env" || command === "printenv") return Object.entries(shellState.env).map(([k,v]) => k + "=" + v).join("\n");
+    if (command === "echo") return args.join(" ");
+    if (command === "printf") {
+        const fmt = args.shift() || "";
+        let i = 0;
+        return fmt.replace(/\\n/g, "\n").replace(/%s|%d|%i/g, () => args[i++] ?? "");
+    }
+    if (command === "history") return shellState.history.map((h,i) => String(i+1).padStart(4) + "  " + h).join("\n") || "history: no commands yet";
+    if (command === "cd") {
+        const target = args[0] || "~";
+        const dest = target === "-" ? shellState.previousCwd || shellState.env.HOME : normalizePath(target);
+        if (!virtualFS[dest] || virtualFS[dest].type !== "dir") return fail("bash: cd: " + target + ": No such file or directory");
+        shellState.previousCwd = shellState.cwd; shellState.cwd = dest; return "";
+    }
+    if (command === "ls" || command === "dir" || command === "ll") {
+        const pathArg = args.find(a => !a.startsWith("-")) || shellState.cwd;
+        const path = normalizePath(pathArg);
+        if (!virtualFS[path]) return fail("ls: cannot access '" + pathArg + "': No such file or directory");
+        if (virtualFS[path].type !== "dir") return baseName(path);
+        return outputListing(path, args);
+    }
+    if (command === "tree") {
+        const root = normalizePath(args.find(a => !a.startsWith("-")) || shellState.cwd);
+        if (!virtualFS[root] || virtualFS[root].type !== "dir") return fail("tree: '" + root + "': No such directory");
+        const lines = [root === shellState.env.HOME ? "." : root];
+        function walk(dir, prefix, depth) {
+            if (depth > 4) return;
+            const kids = childrenOf(dir).sort();
+            kids.forEach((key, i) => {
+                const last = i === kids.length - 1, node = virtualFS[key];
+                lines.push(prefix + (last ? "└── " : "├── ") + baseName(key) + (node.type === "dir" ? "/" : ""));
+                if (node.type === "dir") walk(key, prefix + (last ? "    " : "│   "), depth + 1);
+            });
+        }
+        walk(root, "", 0); return lines.join("\n");
+    }
+    if (command === "cat" || command === "less" || command === "more") {
+        if (!fileArgs.length) return fail(command + ": missing file operand");
+        return fileArgs.map(file => {
+            try { return (fileArgs.length > 1 ? "==> " + file + " <==\n" : "") + readVirtualFile(file); }
+            catch (e) { return command + ": " + file + ": " + e.message; }
+        }).join("\n");
+    }
+    if (command === "touch" || command === "mkdir") {
+        if (!operands.length) return fail(command + ": missing file operand");
+        for (const operand of operands) {
+            const path = normalizePath(operand);
+            if (command === "mkdir" && args.includes("-p")) {
+                const parts = path.split("/").filter(Boolean); let cur = "";
+                for (const part of parts) { cur += "/" + part; if (!virtualFS[cur]) virtualFS[cur] = {type:"dir",mode:"drwxr-xr-x",owner:shellState.user,group:shellState.user,modified:now.toLocaleString()}; }
+                continue;
+            }
+            if (!ensureParent(path)) return fail(command + ": cannot create '" + operand + "': No such directory");
+            if (command === "mkdir") {
+                if (virtualFS[path]) return fail("mkdir: cannot create directory '" + operand + "': File exists");
+                virtualFS[path] = {type:"dir",mode:"drwxr-xr-x",owner:shellState.user,group:shellState.user,modified:now.toLocaleString()};
+            } else if (virtualFS[path]) {
+                if (virtualFS[path].type === "file") virtualFS[path].modified = now.toLocaleString();
+            } else virtualFS[path] = {type:"file",mode:"-rw-r--r--",owner:shellState.user,group:shellState.user,content:"",modified:now.toLocaleString()};
+        }
+        return "";
+    }
+    if (command === "rm") {
+        if (!operands.length) return fail("rm: missing operand");
+        for (const operand of operands) {
+            const path = normalizePath(operand);
+            if (!virtualFS[path]) return fail("rm: cannot remove '" + operand + "': No such file or directory");
+            if (path === "/" || path === shellState.env.HOME) return fail("rm: refusing to remove protected virtual directory");
+            const descendants = Object.keys(virtualFS).filter(k => k.startsWith(path + "/"));
+            if (virtualFS[path].type === "dir" && descendants.length && !args.some(a => a === "-r" || a === "-rf" || a === "-fr" || a === "--recursive")) return fail("rm: cannot remove '" + operand + "': Is a directory (try rm -r)");
+            descendants.forEach(k => delete virtualFS[k]); delete virtualFS[path];
+        }
+        return "";
+    }
+    if (command === "cp" || command === "mv") {
+        const source = operands[0], destination = operands[1];
+        if (!source || !destination) return fail(command + ": missing file operand");
+        const src = normalizePath(source), dst = normalizePath(destination), node = virtualFS[src];
+        if (!node) return fail(command + ": cannot stat '" + source + "': No such file or directory");
+        if (node.type === "dir" && !args.includes("-r") && !args.includes("-R")) return fail(command + ": -r not specified; omitting directory '" + source + "'");
+        const finalDest = virtualFS[dst]?.type === "dir" ? dst + "/" + baseName(src) : dst;
+        if (!ensureParent(finalDest)) return fail(command + ": cannot create '" + destination + "': No such directory");
+        const copyNode = key => ({...virtualFS[key]});
+        virtualFS[finalDest] = copyNode(src);
+        if (node.type === "dir") {
+            Object.keys(virtualFS).filter(k => k.startsWith(src + "/")).sort((a,b) => a.length-b.length).forEach(k => virtualFS[finalDest + k.slice(src.length)] = copyNode(k));
+        }
+        if (command === "mv") {
+            Object.keys(virtualFS).filter(k => k === src || k.startsWith(src + "/")).forEach(k => delete virtualFS[k]);
+        }
+        return "";
+    }
+    if (command === "stat") {
+        if (!args[0]) return fail("stat: missing operand");
+        const path = normalizePath(args[0]), n = virtualFS[path];
+        if (!n) return fail("stat: cannot statx '" + args[0] + "': No such file or directory");
+        return "  File: " + path + "\n  Size: " + (n.content || "").length + "\tBlocks: 8\tIO Block: 4096 " + (n.type === "dir" ? "directory" : "regular file") + "\nDevice: websim\tInode: " + (Object.keys(virtualFS).indexOf(path)+1) + "\tLinks: 1\nAccess: (" + n.mode + ")  Uid: (" + n.owner + ")  Gid: (" + n.group + ")\nModify: " + n.modified + "\n(simulated metadata)";
+    }
+    if (command === "file") return fileArgs.map(f => {
+        const n = virtualFS[normalizePath(f)];
+        return f + ": " + (!n ? "cannot open (No such file or directory)" : n.type === "dir" ? "directory" : "ASCII text");
+    }).join("\n") || fail("file: missing file operand");
+    if (command === "chmod") {
+        if (args.length < 2) return fail("chmod: missing operand");
+        const mode = args[0], path = normalizePath(args[1]), n = virtualFS[path];
+        if (!n) return fail("chmod: cannot access '" + args[1] + "': No such file or directory");
+        n.mode = mode.replace(/[0-7]/g, "").length === 0 && /^[0-7]{3,4}$/.test(mode) ? "-" + mode + " (simulated)" : mode + " (simulated)";
+        return "Permissions updated in virtual metadata only.";
+    }
+    if (command === "grep") {
+        const pattern = args.find(a => !a.startsWith("-"));
+        const files = args.filter(a => !a.startsWith("-") && a !== pattern);
+        if (!pattern || !files.length) return fail("usage: grep [-in] PATTERN FILE...");
+        const out = [];
+        for (const file of files) {
+            try {
+                readVirtualFile(file).split("\n").forEach((line,i) => {
+                    const match = args.includes("-i") ? line.toLowerCase().includes(pattern.toLowerCase()) : line.includes(pattern);
+                    if (match) out.push((files.length > 1 ? file + ":" : "") + (args.includes("-n") ? (i+1) + ":" : "") + line);
+                });
+            } catch (e) { out.push("grep: " + file + ": " + e.message); }
+        }
+        return out.join("\n") || fail("");
+    }
+    if (command === "head" || command === "tail") {
+        const nIndex = args.findIndex(a => a === "-n" || a === "--lines");
+        const count = nIndex >= 0 ? Math.max(0, Math.min(100, Number(args[nIndex+1]) || 10)) : 10;
+        const file = args.find((a,i) => !a.startsWith("-") && !(nIndex >= 0 && i === nIndex+1));
+        if (!file) return fail(command + ": missing file operand");
+        try {
+            const lines = readVirtualFile(file).split("\n");
+            return (command === "head" ? lines.slice(0,count) : lines.slice(-count)).join("\n");
+        } catch (e) { return fail(command + ": " + file + ": " + e.message); }
+    }
+    if (command === "wc") {
+        if (!fileArgs.length) return fail("wc: missing file operand");
+        return fileArgs.map(file => {
+            try {
+                const text = readVirtualFile(file), lines = text ? text.split("\n").length : 0;
+                const words = (text.match(/\S+/g) || []).length, bytes = new TextEncoder().encode(text).length;
+                const vals = [];
+                if (!flags.length || flags.includes("-l")) vals.push(lines);
+                if (flags.includes("-w")) vals.push(words);
+                if (flags.includes("-c")) vals.push(bytes);
+                return vals.join(" ").padStart(8) + " " + file;
+            } catch (e) { return "wc: " + file + ": " + e.message; }
+        }).join("\n");
+    }
+    if (command === "find") {
+        const root = normalizePath(args.find(a => !a.startsWith("-") && a !== "find") || ".");
+        if (!virtualFS[root]) return fail("find: '" + root + "': No such file or directory");
+        const nameIndex = args.indexOf("-name");
+        const pattern = nameIndex >= 0 ? (args[nameIndex+1] || "*") : "*";
+        const regex = new RegExp("^" + pattern.split("*").map(x => x.replace(/[.*+?^{}()|[\]\\]/g,"\\$&")).join(".*").replace(/\?/g,".") + "$");
+        return Object.keys(virtualFS).filter(k => (k === root || k.startsWith(root === "/" ? "/" : root + "/")) && regex.test(baseName(k))).sort().join("\n");
+    }
+    if (command === "projects") return "PROJECT DIRECTORY // PUBLIC\n[P-001] mOS — pocket-sized OS concept\n[P-002] Mission Link — LoRa mesh networking\n[P-003] UNKNOWN SIGNAL — access restricted";
+    if (command === "about") return "TEAM BLACKLIGHT\nAn independent gaming and development collective.\nWe build games, software, hardware, and experiments.\nCreativity has no permissions.";
+    if (command === "status") return "Website: ONLINE\nTerminal: OPERATIONAL\nShell: SIMULATED\nStore: PREVIEW MODE\nPayments: NOT CONFIGURED";
+    if (command === "store") return "TEAM BLACKLIGHT SUPPLY\nStorefront status: PREVIEW. No purchases or payments are enabled.";
+    if (command === "contact") return "COMMUNICATION DIRECTORY\nOfficial contact channels have not been configured yet.";
+    if (command === "secret") return "...SIGNAL DETECTED...\nYou're looking in the right places.\nSIGNAL FRAGMENT 001 // THE LIGHT IS NOT THE SOURCE.";
+    if (command === "account") { terminalHTML('<p class="terminal-system">MEMBER ACCESS</p><p>Opening the account interface...</p><p><a href="#account">ACCESS ACCOUNT PANEL ↗</a></p>'); return ""; }
+    if (command === "true") return "";
+    if (command === "false") { shellState.lastStatus = 1; return ""; }
+    if (command === "which" || command === "command") {
+        const available = ["ls","pwd","cd","cat","echo","printf","grep","head","tail","wc","find","touch","mkdir","cp","mv","rm","tree","uname","whoami","id","date","uptime","ps","df","free","env","history","sudo","apt","help"];
+        const name = args[0];
+        return name ? (available.includes(name) ? "/usr/bin/" + name : name + " not found") : "command: usage: command [-v] NAME";
+    }
+    return fail("bash: " + command + ": command not found. Try 'help' to see supported commands.");
 }
 
 function runCommand(rawCommand) {
     const input = rawCommand.trim();
     if (!input) return;
-
     shellState.history.push(input);
     shellState.historyIndex = shellState.history.length;
-    printToTerminal(
-        `<p><span class="terminal-highlight">${escapeHTML(shellState.user)}@team-blacklight:${escapeHTML(shellState.cwd)}$</span> ${escapeHTML(input)}</p>`
-    );
-
-    const parts = input.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
-    const command = (parts.shift() || "").toLowerCase();
-    const args = parts.map(part => part.replace(/^"|"$/g, ""));
-
-    if (command === "clear") {
-        terminalOutput.replaceChildren();
-        return;
-    }
-
-    if (command === "sudo") {
-        printToTerminal(args.length
-            ? '<p class="terminal-error">sudo: this browser terminal cannot run commands on a real computer or grant administrator privileges.</p><p>For safety, it will not collect or request your actual admin password. Run trusted system commands directly in your own Linux terminal.</p>'
-            : '<p>Usage: sudo &lt;command&gt;</p><p>This web terminal is simulated; sudo cannot elevate privileges here.</p>');
-        return;
-    }
-
-    if (command === "apt" || command === "apt-get" || command === "systemctl" ||
-        command === "reboot" || command === "shutdown" || command === "rm" ||
-        command === "chmod" || command === "chown" || command === "mount") {
-        printToTerminal('<p class="terminal-error">' + escapeHTML(command) +
-            ': this web shell does not execute operating-system commands.</p>');
-        return;
-    }
-
-    if (command === "cd") {
-        printToTerminal(commands.cd(args));
-        return;
-    }
-
-    if (commands[command]) {
-        const result = commands[command](args);
-        if (result) printToTerminal(result);
-    } else {
-        printToTerminal(
-            `<p class="terminal-error">bash: ${escapeHTML(command)}: command not found. Type "help" for available commands.</p>`
-        );
-    }
+    const prompt = document.createElement("p");
+    prompt.innerHTML = '<span class="terminal-highlight">' + escapeHTML(shellState.user + "@" + shellState.host + ":" + shellState.cwd.replace(shellState.env.HOME, "~")) + "$</span> " + escapeHTML(input);
+    terminalOutput.appendChild(prompt);
+    const result = runShellCommand(input);
+    shellState.lastStatus = shellState.lastStatus || 0;
+    if (result !== undefined && result !== null && result !== "") terminalPre(result);
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
 }
+
 if (terminalForm && terminalInput && terminalOutput) {
     terminalForm.addEventListener("submit", event => {
         event.preventDefault();
         runCommand(terminalInput.value);
         terminalInput.value = "";
         terminalInput.focus();
+    });
+    terminalInput.addEventListener("keydown", event => {
+        if (event.key === "ArrowUp") {
+            event.preventDefault();
+            if (shellState.historyIndex > 0) shellState.historyIndex--;
+            terminalInput.value = shellState.history[shellState.historyIndex] || "";
+        } else if (event.key === "ArrowDown") {
+            event.preventDefault();
+            if (shellState.historyIndex < shellState.history.length) shellState.historyIndex++;
+            terminalInput.value = shellState.history[shellState.historyIndex] || "";
+        } else if (event.key === "Tab") {
+            event.preventDefault();
+            const partial = terminalInput.value.trim().split(/\s+/).pop() || "";
+            const options = [...new Set([...Object.keys(virtualFS).map(baseName), "help","ls","cd","pwd","cat","touch","mkdir","cp","mv","rm","grep","head","tail","wc","find","tree","uname","whoami","id","date","uptime","ps","df","free","env","history","sudo","apt","projects","about","status","store","contact","account","secret"])].filter(item => item.startsWith(partial)).sort();
+            if (options.length === 1) terminalInput.value = terminalInput.value.slice(0, terminalInput.value.lastIndexOf(partial)) + options[0] + " ";
+            else if (options.length > 1) terminalPrint(options.join("    "), "terminal-system");
+        }
     });
 }
 
