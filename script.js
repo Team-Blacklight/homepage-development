@@ -270,6 +270,19 @@ const refreshRosterButton = document.getElementById("refresh-roster");
 
 let activeStaffUser = null;
 let activeStaffProfile = null;
+let mfaGateInProgress = false;
+let pendingMfaFactorId = null;
+let pendingMfaMode = null;
+const mfaPanel = document.getElementById("mfa-panel");
+const mfaHeading = document.getElementById("mfa-heading");
+const mfaHelp = document.getElementById("mfa-help");
+const mfaQr = document.getElementById("mfa-qr");
+const mfaSecretWrap = document.getElementById("mfa-secret-wrap");
+const mfaSecret = document.getElementById("mfa-secret");
+const mfaVerifyForm = document.getElementById("mfa-verify-form");
+const mfaCode = document.getElementById("mfa-code");
+const mfaVerifyButton = document.getElementById("mfa-verify-button");
+const mfaCancelButton = document.getElementById("mfa-cancel-button");
 
 function hideStaffDashboard() {
     if (staffDashboard) staffDashboard.hidden = true;
@@ -341,6 +354,70 @@ async function loadCurrentProfile(user) {
     await renderStaffDashboard(user, data);
 }
 
+function showMfaPanel({ mode, factorId, qrCode = "", secret = "" }) {
+    pendingMfaMode = mode; pendingMfaFactorId = factorId;
+    if (authForms) authForms.hidden = true;
+    if (accountDetails) accountDetails.hidden = true;
+    if (mfaPanel) mfaPanel.hidden = false;
+    hideStaffDashboard();
+    mfaHeading.textContent = mode === "enroll" ? "SET UP TWO-STEP VERIFICATION" : "ENTER YOUR VERIFICATION CODE";
+    mfaHelp.textContent = mode === "enroll"
+        ? "Scan this QR code with an authenticator app, then enter its six-digit code. Keep the manual key private."
+        : "Enter the current six-digit code from your authenticator app to finish signing in.";
+    mfaQr.hidden = !qrCode;
+    if (qrCode) mfaQr.src = qrCode; else mfaQr.removeAttribute("src");
+    mfaSecretWrap.hidden = !secret;
+    mfaSecret.textContent = secret;
+    mfaVerifyButton.textContent = mode === "enroll" ? "ENABLE MFA & CONTINUE" : "VERIFY & SIGN IN";
+    mfaCode.value = ""; mfaCode.focus();
+}
+async function beginMfaGate(user) {
+    if (!supabaseClient || !user) throw new Error("No authenticated user is available.");
+    mfaGateInProgress = true; hideStaffDashboard();
+    const { data: factors, error } = await supabaseClient.auth.mfa.listFactors();
+    if (error) throw error;
+    const factor = (factors?.totp || []).find(item => item.status === "verified");
+    if (factor) {
+        const { data: level, error: levelError } = await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (levelError) throw levelError;
+        if (level?.currentLevel === "aal2") {
+            mfaGateInProgress = false; mfaPanel.hidden = true;
+            await loadCurrentProfile(user); return;
+        }
+        showMfaPanel({ mode: "challenge", factorId: factor.id });
+        setAccountMessage("Password accepted. Complete the second verification step."); return;
+    }
+    const { data: enrolled, error: enrollError } = await supabaseClient.auth.mfa.enroll({ factorType: "totp", friendlyName: "Team Blacklight Website" });
+    if (enrollError) throw enrollError;
+    showMfaPanel({ mode: "enroll", factorId: enrolled.id, qrCode: enrolled.totp?.qr_code || "", secret: enrolled.totp?.secret || "" });
+    setAccountMessage("Set up two-step verification to finish signing in.");
+}
+mfaVerifyForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!pendingMfaFactorId || !pendingMfaMode) return;
+    const code = String(mfaCode.value || "").replace(/\D/g, "");
+    if (!/^[0-9]{6}$/.test(code)) { setAccountMessage("Enter the six-digit code from your authenticator app.", true); return; }
+    mfaVerifyButton.disabled = true;
+    setAccountMessage(pendingMfaMode === "enroll" ? "Enabling two-step verification…" : "Verifying second factor…");
+    try {
+        const { error } = await supabaseClient.auth.mfa.challengeAndVerify({ factorId: pendingMfaFactorId, code });
+        if (error) throw error;
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        if (!sessionData.session?.user) throw new Error("Verification succeeded, but the signed-in user could not be found.");
+        const user = sessionData.session.user;
+        pendingMfaFactorId = null; pendingMfaMode = null; mfaGateInProgress = false; mfaPanel.hidden = true;
+        await loadCurrentProfile(user);
+        setAccountMessage("Two-step verification complete.");
+    } catch (error) { setAccountMessage(error.message || "Verification failed. Check the code and try again.", true); }
+    finally { mfaVerifyButton.disabled = false; }
+});
+mfaCancelButton?.addEventListener("click", async () => {
+    mfaGateInProgress = false; pendingMfaFactorId = null; pendingMfaMode = null;
+    mfaPanel.hidden = true;
+    try { await supabaseClient.auth.signOut(); } catch (_) {}
+    showSignedOut(); setAccountMessage("Signed out. Two-step verification is required to sign in.");
+});
+
 async function refreshSession() {
     if (!supabaseClient) {
         showSignedOut();
@@ -362,12 +439,13 @@ async function refreshSession() {
     }
 
     if (data.session?.user) {
-        await loadCurrentProfile(data.session.user);
+        const { data: level, error: levelError } = await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (levelError) { showSignedOut(); setAccountMessage("Could not verify sign-in security. Please sign in again.", true); return; }
+        if (level?.currentLevel === "aal2") await loadCurrentProfile(data.session.user);
+        else await beginMfaGate(data.session.user);
     } else {
         showSignedOut();
-        setAccountMessage(
-            "Not signed in. Create an account or log in to continue."
-        );
+        setAccountMessage("Not signed in. Create an account or log in to continue.");
     }
 }
 
@@ -410,8 +488,8 @@ if (!supabaseClient) {
             if (error) throw error;
 
             if (data.session && data.user) {
-                await loadCurrentProfile(data.user);
                 signupForm.reset();
+                await beginMfaGate(data.user);
             } else {
                 setAccountMessage(
                     "Account request received. Check your email for a verification link, then log in."
@@ -425,34 +503,25 @@ if (!supabaseClient) {
         }
     });
 
-    // Log in
+    // Password is the first factor; TOTP verification is required before access.
     loginForm?.addEventListener("submit", async event => {
         event.preventDefault();
-
         const formData = new FormData(loginForm);
         const email = String(formData.get("email") || "").trim();
         const password = String(formData.get("password") || "");
-
         const submitButton = loginForm.querySelector('button[type="submit"]');
         submitButton.disabled = true;
-        setAccountMessage("Authenticating...");
-
+        mfaGateInProgress = true;
+        hideStaffDashboard();
+        setAccountMessage("Checking your credentials…");
         try {
-            const { data, error } =
-                await supabaseClient.auth.signInWithPassword({
-                    email,
-                    password
-                });
-
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) throw error;
-
-            await loadCurrentProfile(data.user);
             loginForm.reset();
+            await beginMfaGate(data.user);
         } catch (error) {
-            setAccountMessage(
-                error.message || "Login failed. Check your credentials.",
-                true
-            );
+            mfaGateInProgress = false;
+            setAccountMessage(error.message || "Login failed. Check your credentials.", true);
         } finally {
             submitButton.disabled = false;
         }
@@ -491,8 +560,12 @@ if (!supabaseClient) {
             }
         }
 
-        if (event === "SIGNED_IN" && session?.user) {
-            setTimeout(() => loadCurrentProfile(session.user), 0);
+        if (event === "SIGNED_IN" && session?.user && !mfaGateInProgress) {
+            setTimeout(async () => {
+                const { data: level } = await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
+                if (level?.currentLevel === "aal2") await loadCurrentProfile(session.user);
+                else { hideStaffDashboard(); setAccountMessage("Complete two-step verification to access your account."); }
+            }, 0);
         }
 
         if (event === "SIGNED_OUT") {
@@ -514,7 +587,9 @@ async function renderStaffDashboard(user, profile) {
     activeStaffUser = user;
     activeStaffProfile = profile;
 
+    const { data: level } = await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
     if (
+        level?.currentLevel !== "aal2" ||
         !profile ||
         !["admin", "overseer"].includes(profile.role)
     ) {
@@ -1333,16 +1408,38 @@ async function loadJoinApplications() {
         }
         select.value = application.status || "new";
         const save = document.createElement("button"); save.type = "button"; save.className = "button secondary"; save.textContent = "SAVE STATUS";
+        const updateDecisionButtonLabel = () => {
+            save.textContent = ["accepted", "declined"].includes(select.value) ? "EMAIL DECISION & REMOVE" : "SAVE STATUS";
+        };
+        select.addEventListener("change", updateDecisionButtonLabel);
+        updateDecisionButtonLabel();
         save.addEventListener("click", async () => {
             if (!staffCanManageContent()) { controlMessage("applications-inbox-message", "Admin or overseer permissions required.", true); return; }
+            const decision = select.value;
             save.disabled = true;
-            const { error: updateError } = await supabaseClient.from("join_applications").update({ status: select.value }).eq("id", application.id);
+            if (["accepted", "declined"].includes(decision)) {
+                controlMessage("applications-inbox-message", "Sending the " + decision + " email…");
+                try {
+                    const { data: result, error: sendError } = await supabaseClient.functions.invoke("review-application", { body: { application_id: application.id, decision } });
+                    if (sendError) throw sendError;
+                    if (result?.error) throw new Error(result.error);
+                    recordControlActivity("Emailed " + decision + " decision to " + (application.email || "applicant") + " and removed the application");
+                    controlMessage("applications-inbox-message", "Decision email sent. Application removed from the inbox.");
+                    await loadJoinApplications();
+                } catch (error) {
+                    console.error("Application decision email failed:", error);
+                    controlMessage("applications-inbox-message", error.message || "Email failed. The application was kept for retry.", true);
+                    save.disabled = false;
+                }
+                return;
+            }
+            const { error: updateError } = await supabaseClient.from("join_applications").update({ status: decision }).eq("id", application.id);
             save.disabled = false;
-            if (updateError) { controlMessage("applications-inbox-message", "Status update failed. Run join-applications-review.sql in Supabase and verify staff permissions.", true); return; }
-            recordControlActivity("Updated application status for " + (application.name || "applicant") + " to " + select.value);
+            if (updateError) { controlMessage("applications-inbox-message", "Status update failed. Check the application review policy.", true); return; }
+            recordControlActivity("Updated application status for " + (application.name || "applicant") + " to " + decision);
             controlMessage("applications-inbox-message", "Application status saved.");
             await loadJoinApplications();
-        });
+        });;
         actions.append(label, select, save); card.append(actions); list.append(card);
     }
     controlMessage("applications-inbox-message", "Loaded " + applications.length + (applications.length === 1 ? " application." : " applications."));
