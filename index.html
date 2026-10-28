@@ -20,6 +20,8 @@
         <nav>
             <a href="#projects">PROJECTS</a>
             <a href="#collaborate">COLLABORATE</a>
+            <a href="#join">JOIN US</a>
+            <a href="#contacts">CONTACTS</a>
             <a href="#terminal">TERMINAL</a>
             <a href="#store">STORE</a>
             <a href="#about">ABOUT</a>
@@ -304,6 +306,7 @@
         <button type="button" class="control-tab" data-panel="projects">PROJECTS</button>
         <button type="button" class="control-tab" data-panel="store">STORE</button>
         <button type="button" class="control-tab" data-panel="members">MEMBERS</button>
+        <button type="button" class="control-tab" data-panel="applications">APPLICATIONS</button>
         <button type="button" class="control-tab" data-panel="activity">ACTIVITY</button>
     </nav>
 
@@ -446,7 +449,13 @@
         <p class="control-hint">Only overseers can change another member's role. Role changes are enforced by Supabase.</p>
     </div>
 
-    <div class="control-panel" id="panel-activity" hidden>
+    <div class="control-panel" id="panel-applications" hidden>
+<div class="control-panel-heading"><div><p class="eyebrow">// PERSONNEL INTAKE</p><h3>TEAM APPLICATIONS</h3></div><span class="section-code">PUBLIC INTAKE CONTROL</span></div>
+<div class="application-toggle-card"><div><h4>ACCEPT TEAM APPLICATIONS</h4><p>When enabled, visitors can submit an application. When disabled, the public form is closed.</p></div>
+<label class="toggle-label" for="applications-enabled"><input type="checkbox" id="applications-enabled"><span class="toggle-track"></span><span id="applications-toggle-label">CLOSED</span></label></div>
+<p id="applications-admin-message" class="control-message" role="status" aria-live="polite">Loading application settings…</p>
+<p class="control-hint">Requires the Supabase schema and policies in join-applications.sql. Database rules also block submissions while intake is closed.</p></div>
+<div class="control-panel" id="panel-activity" hidden>
         <div class="control-panel-heading">
             <div>
                 <p class="eyebrow">// SESSION LOG</p>
@@ -486,7 +495,28 @@
             </div>
         </section>
 
-        <section class="about-section" id="about">
+        <section class="join-section" id="join">
+<div class="join-inner"><p class="eyebrow">// 06 — PERSONNEL INTAKE</p><h2>JOIN <span class="gradient-text">THE TEAM.</span></h2>
+<p class="join-intro">Want to help build what comes next? Team Blacklight welcomes thoughtful applications from people interested in software, hardware, games, design, research, and creative work.</p>
+<div id="join-application-state" class="join-state" role="status" aria-live="polite"><span class="status-dot"></span><div><strong>APPLICATIONS CLOSED</strong><p>Team applications are not currently open. Check back later.</p></div></div>
+<form id="join-application-form" class="join-form" hidden>
+<h3>TEAM MEMBERSHIP APPLICATION</h3>
+<label for="join-name">Name or preferred name</label><input id="join-name" name="name" maxlength="80" required autocomplete="name">
+<label for="join-email">Contact email</label><input id="join-email" name="email" type="email" maxlength="254" required autocomplete="email">
+<label for="join-area">Area of interest</label><select id="join-area" name="area" required><option value="">Choose an area…</option><option>Software development</option><option>Hardware / embedded systems</option><option>Games</option><option>Art / design / audio</option><option>Research / networking</option><option>Other</option></select>
+<label for="join-message">Tell us about yourself and what you'd like to contribute</label><textarea id="join-message" name="message" maxlength="3000" rows="5" required></textarea>
+<label for="join-link">Portfolio or project link (optional)</label><input id="join-link" name="link" type="url" maxlength="500" placeholder="https://…">
+<button class="button primary" type="submit">SUBMIT APPLICATION</button><p id="join-application-message" class="control-message" role="status" aria-live="polite"></p>
+<p class="join-privacy">Only submit information you're comfortable sharing with Team Blacklight's application reviewers.</p></form></div></section>
+<section class="contacts-section" id="contacts"><div class="contacts-inner"><p class="eyebrow">// 07 — CONTACT DIRECTORY</p><h2>CONTACT <span class="gradient-text">TEAM BLACKLIGHT.</span></h2>
+<p class="contacts-intro">Official email addresses will be published here once the contact inboxes are configured.</p><div class="contact-list">
+<article class="contact-row"><span class="contact-code">MAIL / 01</span><div><h3>General enquiries</h3><p>Official address not configured yet.</p></div><span class="contact-state">PENDING</span></article>
+<article class="contact-row"><span class="contact-code">MAIL / 02</span><div><h3>Collaboration proposals</h3><p>Official address not configured yet.</p></div><span class="contact-state">PENDING</span></article>
+<article class="contact-row"><span class="contact-code">MAIL / 03</span><div><h3>Team applications</h3><p>Handled through the application portal when enabled.</p></div><span class="contact-state">PORTAL</span></article>
+<article class="contact-row"><span class="contact-code">MAIL / 04</span><div><h3>Privacy and account support</h3><p>Official address not configured yet.</p></div><span class="contact-state">PENDING</span></article></div>
+<p class="contacts-footnote">No email addresses are invented or displayed until Team Blacklight has configured its official contact inboxes.</p></div></section>
+
+<section class="about-section" id="about">
             <p class="eyebrow">// 04 — WHO WE ARE</p>
             <h2>MADE BY CREATORS.<br><span class="gradient-text">DEFINED BY NOTHING.</span></h2>
             <p>
