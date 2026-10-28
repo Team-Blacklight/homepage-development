@@ -89,60 +89,14 @@
                 <span class="section-code">PROJECTS / 002+</span>
             </div>
 
-            <div class="project-grid">
-                <article class="project-card">
-                    <div class="card-top">
-                        <span class="tag">HARDWARE / SOFTWARE</span>
-                        <span class="card-number">P-001</span>
-                    </div>
-                    <div class="project-icon">◉</div>
-                    <h3>mOS</h3>
-                    <p>
-                        A pocket-sized operating system concept built
-                        around a round display, expandable apps,
-                        and independent communication.
-                    </p>
-                    <div class="card-bottom">
-                        <span>STATUS: IN DEVELOPMENT</span>
-                        <a href="#terminal">INSPECT ↗</a>
-                    </div>
-                </article>
-
-                <article class="project-card">
-                    <div class="card-top">
-                        <span class="tag">WIRELESS / NETWORKING</span>
-                        <span class="card-number">P-002</span>
-                    </div>
-                    <div class="project-icon">⌁</div>
-                    <h3>MISSION LINK</h3>
-                    <p>
-                        An experimental LoRa mesh networking project
-                        exploring communication between independent
-                        nodes over long distances.
-                    </p>
-                    <div class="card-bottom">
-                        <span>STATUS: IN DEVELOPMENT</span>
-                        <a href="#terminal">INSPECT ↗</a>
-                    </div>
-                </article>
-
-                <article class="project-card classified">
-                    <div class="card-top">
-                        <span class="tag">CLASSIFIED</span>
-                        <span class="card-number">P-003</span>
-                    </div>
-                    <div class="project-icon">?</div>
-                    <h3>UNKNOWN SIGNAL</h3>
-                    <p>
-                        Not every project is ready for the public.
-                        Some things are better left undiscovered.
-                    </p>
-                    <div class="card-bottom">
-                        <span>STATUS: REDACTED</span>
-                        <a href="#terminal">INVESTIGATE ↗</a>
-                    </div>
+            <div class="project-grid" id="public-project-grid" aria-live="polite">
+                <article class="project-card public-loading-card">
+                    <p class="eyebrow">// CONNECTING TO PROJECT DATABASE</p>
+                    <h3>LOADING PROJECTS…</h3>
+                    <p>Published projects will appear here.</p>
                 </article>
             </div>
+            <p class="public-content-note" id="public-projects-message" role="status" aria-live="polite"></p>
         </section>
 
         <section class="terminal-section" id="terminal">
@@ -217,6 +171,14 @@
                 </div>
             </div>
 
+            <div class="product-grid" id="public-product-grid" aria-live="polite">
+                <article class="product-card public-loading-card">
+                    <p class="eyebrow">// CONNECTING TO PRODUCT DATABASE</p>
+                    <h3>LOADING CATALOGUE…</h3>
+                    <p>Published products will appear here.</p>
+                </article>
+            </div>
+            <p class="public-content-note" id="public-products-message" role="status" aria-live="polite"></p>
             <p class="store-note">
                 STORE PREVIEW ONLY — product concepts are not guaranteed to
                 represent final hardware. No payments are collected on this site.
