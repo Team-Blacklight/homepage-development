@@ -450,11 +450,20 @@
     </div>
 
     <div class="control-panel" id="panel-applications" hidden>
-<div class="control-panel-heading"><div><p class="eyebrow">// PERSONNEL INTAKE</p><h3>TEAM APPLICATIONS</h3></div><span class="section-code">PUBLIC INTAKE CONTROL</span></div>
-<div class="application-toggle-card"><div><h4>ACCEPT TEAM APPLICATIONS</h4><p>When enabled, visitors can submit an application. When disabled, the public form is closed.</p></div>
-<label class="toggle-label" for="applications-enabled"><input type="checkbox" id="applications-enabled"><span class="toggle-track"></span><span id="applications-toggle-label">CLOSED</span></label></div>
-<p id="applications-admin-message" class="control-message" role="status" aria-live="polite">Loading application settings…</p>
-<p class="control-hint">Requires the Supabase schema and policies in join-applications.sql. Database rules also block submissions while intake is closed.</p></div>
+        <div class="control-panel-heading">
+            <div><p class="eyebrow">// PERSONNEL INTAKE</p><h3>TEAM APPLICATIONS</h3></div>
+            <button type="button" class="button secondary" id="refresh-applications">REFRESH INBOX</button>
+        </div>
+        <div class="application-toggle-card">
+            <div><h4>ACCEPT TEAM APPLICATIONS</h4><p>When enabled, visitors can submit an application. When disabled, the public form is closed.</p></div>
+            <label class="toggle-label" for="applications-enabled"><input type="checkbox" id="applications-enabled"><span class="toggle-track"></span><span id="applications-toggle-label">CLOSED</span></label>
+        </div>
+        <p id="applications-admin-message" class="control-message" role="status" aria-live="polite">Loading application settings…</p>
+        <div class="application-inbox-heading"><div><p class="eyebrow">// SUBMISSIONS</p><h4>APPLICATIONS INBOX</h4></div><span id="application-count" class="section-code">0 APPLICATIONS</span></div>
+        <p id="applications-inbox-message" class="control-message" role="status" aria-live="polite">Open this panel to load submissions.</p>
+        <div id="applications-inbox" class="control-record-list application-inbox"></div>
+        <p class="control-hint">Applicant contact details are visible only to authorized admin/overseer accounts. Status changes require the review policy in join-applications-review.sql.</p>
+    </div>
 <div class="control-panel" id="panel-activity" hidden>
         <div class="control-panel-heading">
             <div>
