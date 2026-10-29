@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080a10"><title>STARFALL COURIER // BLACKLIGHT ARCADE</title><link rel="icon" href="../../logo.ico"><style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@500;600;700&display=swap');
+:root{--bg:#080a10;--cyan:#66e7ff;--purple:#b8a4ff;--text:#edf0fa;--muted:#8991a9}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#1c2340,#080a10 65%);color:var(--text);font:18px Rajdhani,sans-serif;min-height:100vh;display:flex;flex-direction:column}a{color:var(--cyan);text-decoration:none}.bar{padding:18px 5%;border-bottom:1px solid #292b43;display:flex;justify-content:space-between;align-items:center;font:700 11px Orbitron,sans-serif;letter-spacing:1px}.bar strong{color:var(--purple)}main{width:min(960px,94%);margin:32px auto;flex:1}.heading{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:16px}.eyebrow{color:var(--cyan);font:600 9px Orbitron,sans-serif;letter-spacing:2px}.heading h1{font:800 clamp(24px,5vw,42px) Orbitron,sans-serif;margin:8px 0}.heading p{color:var(--muted);margin:0}.stats{display:flex;gap:18px;font:700 11px Orbitron,sans-serif}.stats span{color:var(--muted)}.stats b{display:block;color:var(--cyan);font-size:20px;margin-top:5px}#game{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#070b16;border:1px solid #555080;box-shadow:0 0 35px #17142d;touch-action:none}.under{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-top:14px;color:var(--muted);font-size:15px}.controls{display:flex;gap:8px;justify-content:center;margin:18px auto 0}.controls button,.action{background:#12192a;border:1px solid #4b4b70;color:var(--text);padding:12px 17px;font:700 10px Orbitron,sans-serif;letter-spacing:1px;border-radius:3px}.controls button:active,.action:hover{border-color:var(--cyan);color:var(--cyan)}.touch{display:none}.overlay{position:fixed;inset:0;display:grid;place-items:center;background:#050710c9;padding:20px}.dialog{width:min(420px,100%);padding:30px;background:#111827;border:1px solid #7164a8;text-align:center;box-shadow:0 0 45px #29204d}.dialog h2{font:800 24px Orbitron,sans-serif}.dialog p{color:#aeb5c9}.dialog button{margin-top:12px;cursor:pointer}.hidden{display:none!important}footer{text-align:center;color:#58627a;font:600 9px Orbitron,sans-serif;letter-spacing:1px;padding:22px}@media(max-width:650px){.heading{align-items:start;flex-direction:column}.under{flex-direction:column;align-items:start}.touch{display:flex}.controls button{padding:14px 18px}}
+</style></head><body>
+<header class="bar"><a href="../index.html">← BLACKLIGHT <strong>GAMES</strong></a><span>ARCADE // 001</span></header>
+<main><div class="heading"><div><div class="eyebrow">DELIVERY ROUTE // SECTOR 07</div><h1>STARFALL COURIER</h1><p>Carry the energy cores through the meteor field.</p></div><div class="stats"><div><span>SCORE</span><b id="score">0000</b></div><div><span>HULL</span><b id="hull">♥♥♥</b></div><div><span>BEST</span><b id="best">0000</b></div></div></div>
+<canvas id="game" width="960" height="540" aria-label="Starfall Courier game area"></canvas>
+<div class="under"><span>MOVE: WASD / ARROWS · COLLECT CYAN CORES · AVOID METEORS</span><button class="action" id="pause">PAUSE</button></div>
+<div class="controls touch" aria-label="Touch controls"><button data-dir="left">◀</button><button data-dir="up">▲</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div>
+</main><footer>TEAM BLACKLIGHT // GAME DEVELOPMENT DIVISION</footer>
+<div class="overlay" id="overlay"><div class="dialog"><div class="eyebrow">INCOMING TRANSMISSION</div><h2 id="dialog-title">DELIVERY RUN READY</h2><p id="dialog-copy">Pilot your courier, collect energy cores, and stay clear of the meteor stream. How long can you keep the route open?</p><button class="action" id="start">START RUN ↗</button></div></div>
+<script>
+(()=>{
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),W=960,H=540;
+const scoreEl=document.getElementById('score'),hullEl=document.getElementById('hull'),bestEl=document.getElementById('best'),overlay=document.getElementById('overlay'),title=document.getElementById('dialog-title'),copy=document.getElementById('dialog-copy'),start=document.getElementById('start'),pause=document.getElementById('pause');
+let best=Number(localStorage.getItem('starfall-best')||0),score=0,hull=3,playing=false,paused=false,last=0,spawn=0,coreSpawn=0,invulnerable=0,keys={},meteors=[],cores=[],stars=[],ship={x:150,y:270,vx:0,vy:0};
+bestEl.textContent=String(best).padStart(4,'0');
+for(let i=0;i<110;i++)stars.push({x:Math.random()*W,y:Math.random()*H,s:.5+Math.random()*2,a:.25+Math.random()*.7});
+function reset(){score=0;hull=3;spawn=0;coreSpawn=0;invulnerable=0;meteors=[];cores=[];ship={x:150,y:270,vx:0,vy:0};updateHud()}
+function updateHud(){scoreEl.textContent=String(score).padStart(4,'0');hullEl.textContent='♥'.repeat(hull)+'♡'.repeat(3-hull)}
+function startRun(){reset();playing=true;paused=false;overlay.classList.add('hidden');last=performance.now();requestAnimationFrame(loop)}
+function endRun(){playing=false;title.textContent='SHIP SIGNAL LOST';copy.textContent='Final delivery score: '+score+'. Best run: '+best+'. Ready to fly again?';start.textContent='RETRY RUN ↗';overlay.classList.remove('hidden')}
+function togglePause(){if(!playing)return;paused=!paused;pause.textContent=paused?'RESUME':'PAUSE';if(!paused){last=performance.now();requestAnimationFrame(loop)}}
+start.addEventListener('click',startRun);pause.addEventListener('click',togglePause);
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys[k]=true;if(k==='p')togglePause();if(k==='enter'&&!playing)startRun()});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+document.querySelectorAll('[data-dir]').forEach(btn=>{const dir=btn.dataset.dir;const map={left:'arrowleft',right:'arrowright',up:'arrowup',down:'arrowdown'};btn.addEventListener('pointerdown',e=>{e.preventDefault();keys[map[dir]]=true});['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,()=>keys[map[dir]]=false))});
+function drawShip(){ctx.save();ctx.translate(ship.x,ship.y);ctx.shadowColor='#66e7ff';ctx.shadowBlur=18;ctx.fillStyle='#d9faff';ctx.beginPath();ctx.moveTo(25,0);ctx.lineTo(-17,-14);ctx.lineTo(-10,0);ctx.lineTo(-17,14);ctx.closePath();ctx.fill();ctx.fillStyle='#8e7bff';ctx.beginPath();ctx.moveTo(-12,-6);ctx.lineTo(-31,0);ctx.lineTo(-12,6);ctx.fill();ctx.restore()}
+function circleHit(a,b,r){return Math.hypot(a.x-b.x,a.y-b.y)<r}
+function update(dt){const accel=680,drag=Math.pow(.001,dt);if(keys.arrowleft||keys.a)ship.vx-=accel*dt;if(keys.arrowright||keys.d)ship.vx+=accel*dt;if(keys.arrowup||keys.w)ship.vy-=accel*dt;if(keys.arrowdown||keys.s)ship.vy+=accel*dt;ship.vx*=drag;ship.vy*=drag;ship.x=Math.max(35,Math.min(W-35,ship.x+ship.vx*dt));ship.y=Math.max(35,Math.min(H-35,ship.y+ship.vy*dt));invulnerable=Math.max(0,invulnerable-dt);
+stars.forEach(s=>{s.x-=70*s.s*dt;if(s.x<0){s.x=W;s.y=Math.random()*H}});
+spawn-=dt;if(spawn<=0){const r=13+Math.random()*22;meteors.push({x:W+40,y:40+Math.random()*(H-80),r,v:230+Math.random()*160+score*.08,spin:Math.random()*6});spawn=Math.max(.28,1.05-score/1800)}
+coreSpawn-=dt;if(coreSpawn<=0){cores.push({x:W+25,y:45+Math.random()*(H-90),r:11,spin:0});coreSpawn=1.7+Math.random()*1.5}
+meteors.forEach(m=>{m.x-=m.v*dt;m.spin+=dt*2});cores.forEach(c=>{c.x-=260*dt;c.spin+=dt*4});
+meteors=meteors.filter(m=>m.x>-60);cores=cores.filter(c=>c.x>-30);
+for(let i=meteors.length-1;i>=0;i--){if(invulnerable<=0&&circleHit(ship,meteors[i],meteors[i].r+12)){meteors.splice(i,1);hull--;invulnerable=1.25;updateHud();if(hull<=0){endRun();return}}}
+for(let i=cores.length-1;i>=0;i--){if(circleHit(ship,cores[i],24)){cores.splice(i,1);score+=100;updateHud()}}
+score+=Math.floor(dt*9);updateHud()}
+function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#080d1b';ctx.fillRect(0,0,W,H);stars.forEach(s=>{ctx.globalAlpha=s.a;ctx.fillStyle='#d8eaff';ctx.fillRect(s.x,s.y,s.s*1.5,s.s*1.5)});ctx.globalAlpha=1;
+ctx.strokeStyle='rgba(102,231,255,.06)';ctx.lineWidth=1;for(let y=0;y<H;y+=60){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+cores.forEach(c=>{ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.spin);ctx.shadowColor='#66e7ff';ctx.shadowBlur=20;ctx.strokeStyle='#a7f5ff';ctx.lineWidth=3;ctx.strokeRect(-c.r/1.5,-c.r/1.5,c.r*1.33,c.r*1.33);ctx.restore()});
+meteors.forEach(m=>{ctx.save();ctx.translate(m.x,m.y);ctx.rotate(m.spin);ctx.fillStyle='#786b83';ctx.strokeStyle='#b9a4d4';ctx.lineWidth=2;ctx.beginPath();for(let j=0;j<9;j++){const a=j*Math.PI*2/9,rr=m.r*(.72+(j%2)*.28);ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()});
+if(invulnerable<=0||Math.floor(invulnerable*12)%2===0)drawShip();
+ctx.fillStyle='rgba(102,231,255,.7)';ctx.font='12px Orbitron';ctx.fillText('ROUTE 07  //  COURIER ACTIVE',22,28)}
+function loop(now){if(!playing||paused)return;const dt=Math.min((now-last)/1000,.04);last=now;update(dt);draw();if(playing)requestAnimationFrame(loop)}
+draw();
+})();
+</script></body></html>
