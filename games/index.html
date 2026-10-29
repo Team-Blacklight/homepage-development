@@ -52,19 +52,33 @@
       </div>
     </section>
 
+    <section class="section recent-section" id="recent-section" hidden>
+      <div class="section-head"><div><p class="eyebrow">// QUICK RESUME</p><h2>RECENTLY <em>PLAYED</em></h2><p class="section-sub">Your recent games are saved on this device.</p></div><span class="section-tag">LOCAL HISTORY</span></div>
+      <div class="recent-grid" id="recent-grid"></div>
+    </section>
+
     <section class="section library-section" id="library">
-      <div class="section-head"><div><p class="eyebrow">// 02 — THE ARCADE</p><h2>GAME <em>LIBRARY</em></h2><p class="section-sub">Find something to play. No account required for the games hosted here.</p></div><span class="section-tag" id="game-count">01 PLAYABLE TITLE</span></div>
-      <div class="library-tools"><label class="search-box"><span>⌕</span><input id="game-search" type="search" placeholder="Search games..." autocomplete="off" aria-label="Search games"></label><div class="filters" role="group" aria-label="Filter games"><button class="filter active" data-filter="all">ALL</button><button class="filter" data-filter="arcade">ARCADE</button><button class="filter" data-filter="original">ORIGINALS</button><button class="filter" data-filter="experimental">EXPERIMENTAL</button></div></div>
+      <div class="section-head"><div><p class="eyebrow">// 02 — THE ARCADE</p><h2>GAME <em>LIBRARY</em></h2><p class="section-sub">Find something to play. No account required for the games hosted here.</p></div><span class="section-tag" id="game-count">GAMES</span></div>
+      <div class="library-tools">
+        <label class="search-box"><span>⌕</span><input id="game-search" type="search" placeholder="Search games..." autocomplete="off" aria-label="Search games"></label>
+        <div class="filters" role="group" aria-label="Filter games">
+          <button class="filter active" data-filter="all">ALL</button>
+          <button class="filter" data-filter="arcade">ARCADE</button>
+          <button class="filter" data-filter="original">ORIGINALS</button>
+          <button class="filter" data-filter="experimental">EXPERIMENTAL</button>
+          <button class="filter" data-filter="favourites">★ FAVOURITES</button>
+        </div>
+      </div>
       <div class="game-grid" id="game-grid">
-        <article class="game-card" data-category="arcade" data-search="starfall courier arcade space action">
+        <article class="game-card" data-game-id="starfall-courier" data-category="arcade" data-search="starfall courier arcade space action">
           <a class="game-cover starfall-cover" href="arcade/starfall-courier.html" aria-label="Play Starfall Courier"><span class="cover-chip">BROWSER ARCADE</span><div class="starfall-icon">✦</div><span class="cover-bottom">DODGE. COLLECT. SURVIVE.</span></a>
           <div class="game-details"><div><span class="game-type">ARCADE / ACTION</span><h3>STARFALL COURIER</h3></div><a class="play-button" href="arcade/starfall-courier.html">PLAY ↗</a></div>
           <p class="game-description">Pilot through a meteor field, collect energy shards, and see how long you can last.</p>
         </article>
-        <article class="game-card coming-card" data-category="original" data-search="void frontier space exploration mmo">
+        <article class="game-card coming-card" data-game-id="void-frontier" data-category="original" data-search="void frontier space exploration mmo">
           <div class="coming-cover"><span>◈</span><small>COMING SOON</small></div><div class="game-details"><div><span class="game-type">SPACE / EXPLORATION</span><h3>VOID FRONTIER</h3></div><span class="status-pill">IN DEV</span></div><p class="game-description">A shared, seed-generated universe. The frontier is still being built.</p>
         </article>
-        <article class="game-card coming-card" data-category="original" data-search="escape forsaken etfr rpg adventure">
+        <article class="game-card coming-card" data-game-id="escape-the-forsaken" data-category="original" data-search="escape forsaken etfr rpg adventure">
           <a class="coming-cover etfr-mini" href="https://innygr.itch.io/escape-the-forsaken" target="_blank" rel="noopener noreferrer"><span>ETFR</span><small>GAME PAGE ↗</small></a><div class="game-details"><div><span class="game-type">RPG / ADVENTURE</span><h3>ESCAPE THE FORSAKEN</h3></div><a class="play-button" href="https://innygr.itch.io/escape-the-forsaken" target="_blank" rel="noopener noreferrer">VIEW ↗</a></div><p class="game-description">A Team Blacklight original. Visit its project page for current availability.</p>
         </article>
       </div>
