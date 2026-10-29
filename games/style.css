@@ -4,3 +4,20 @@
 @media(max-width:1000px){.hero-art{right:-90px;opacity:.45}.hero-copy{max-width:570px}.game-grid{grid-template-columns:repeat(2,1fr)}.topbar{padding:0 4%}.section{padding:80px 6%}}
 @media(max-width:700px){.topbar{height:auto;min-height:70px;padding:13px 5%;flex-wrap:wrap}.topbar nav{order:3;width:100%;justify-content:center;padding-bottom:4px}.studio-link{font-size:8px}.hero{min-height:600px;padding:75px 7%}.hero-art{right:-190px;opacity:.22}.hero h1{letter-spacing:-3px}.hero-meta{flex-direction:column;gap:7px;margin-top:42px}.section{padding:68px 6%}.section-head{align-items:start;flex-direction:column}.original-grid,.game-grid{grid-template-columns:1fr}.feature-visual{height:210px}.library-tools{flex-direction:column}.filters{display:grid;grid-template-columns:repeat(2,1fr)}.callout{padding:70px 7%}.callout-mark{display:none}footer{padding:25px 6%;justify-content:center;text-align:center;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* PLAYER LIBRARY FEATURES */
+[hidden]{display:none!important}
+.favourite-button{flex:0 0 34px;width:34px;height:34px;border:1px solid var(--line);background:rgba(184,164,255,.06);color:var(--muted);font-size:21px;line-height:1;transition:.2s}
+.favourite-button:hover,.favourite-button.is-favourite{color:#ffe28a;border-color:rgba(255,226,138,.55);background:rgba(255,226,138,.08)}
+.favourite-button:focus-visible,.filter:focus-visible,.play-button:focus-visible,.button:focus-visible,.recent-game:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.game-details{flex-wrap:wrap}
+.recent-section{padding-top:65px;padding-bottom:65px}
+.recent-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.recent-game{position:relative;display:flex;min-height:112px;flex-direction:column;justify-content:space-between;padding:17px;background:linear-gradient(145deg,rgba(25,32,50,.96),rgba(12,16,26,.96));border:1px solid var(--line);transition:transform .2s,border-color .2s}
+.recent-game:hover{transform:translateY(-3px);border-color:rgba(102,231,255,.55)}
+.recent-game-type{font:600 8px Orbitron,sans-serif;letter-spacing:1.4px;color:var(--muted)}
+.recent-game strong{font:700 13px Orbitron,sans-serif;max-width:85%}
+.recent-arrow{position:absolute;right:16px;bottom:14px;color:var(--cyan);font-size:19px}
+@media(max-width:900px){.recent-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.recent-grid{grid-template-columns:1fr}.favourite-button{margin-left:auto}}
