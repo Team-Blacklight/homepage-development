@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080a10">
+  <meta name="description" content="Team Blacklight Games — browser games, original worlds, and experimental releases.">
+  <title>BLACKLIGHT GAMES // PLAY</title>
+  <link rel="icon" href="../logo.ico">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#home"><span class="brand-mark">◈</span> BLACKLIGHT<span class="cyan">_</span><small>GAMES</small></a>
+    <nav aria-label="Main navigation">
+      <a href="#originals">ORIGINALS</a><a href="#library">GAME LIBRARY</a><a href="#about">ABOUT</a>
+    </nav>
+    <a class="studio-link" href="https://teamblacklight.ca">TEAM BLACKLIGHT ↗</a>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="pulse"></span> TEAM BLACKLIGHT // GAME DEVELOPMENT DIVISION</p>
+        <h1>YOUR NEXT<br><span class="gradient">WORLD</span><br>AWAITS.</h1>
+        <p class="lead">Discover browser games, explore original worlds, and follow experiments from the Team Blacklight Game Dev Division.</p>
+        <div class="hero-actions"><a class="button primary" href="#library">EXPLORE GAMES <span>↓</span></a><a class="button ghost" href="#originals">OUR ORIGINALS ↗</a></div>
+        <div class="hero-meta"><span>INDEPENDENT GAMES PLATFORM</span><span>BUILT BY TEAM BLACKLIGHT</span></div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="orbit orbit-c"></div>
+        <div class="core"><span>◈</span></div><div class="art-label label-top">TBL // GD-001</div><div class="art-label label-bottom">PLAY BEYOND THE ORDINARY</div>
+      </div>
+      <div class="hero-index">01 <i></i> 04</div>
+    </section>
+
+    <section class="ticker" aria-label="Platform features"><span>PLAY</span><b>✦</b><span>DISCOVER</span><b>✦</b><span>CREATE</span><b>✦</b><span>REPEAT</span><b>✦</b><span>PLAY</span><b>✦</b><span>DISCOVER</span></section>
+
+    <section class="section" id="originals">
+      <div class="section-head"><div><p class="eyebrow">// 01 — STUDIO PROJECTS</p><h2>BLACKLIGHT <em>ORIGINALS</em></h2></div><span class="section-tag">MADE IN-HOUSE</span></div>
+      <div class="original-grid">
+        <article class="feature-card void-card">
+          <div class="feature-visual void-visual"><div class="planet"></div><div class="planet-ring"></div><span class="visual-code">VF / UNIVERSE-001</span><span class="visual-status">IN DEVELOPMENT</span></div>
+          <div class="feature-info"><div class="feature-kicker">SPACE EXPLORATION // MMO CONCEPT</div><h3>VOID FRONTIER</h3><p>Explore a procedurally generated universe shaped by a colossal central singularity. Discover star systems, build fleets, and forge factions in a shared frontier.</p><div class="tag-row"><span>PROCEDURAL UNIVERSE</span><span>MULTIPLAYER</span><span>FACTIONS</span></div><span class="soon">TRANSMISSION INCOMING <b>↗</b></span></div>
+        </article>
+        <article class="feature-card etfr-card">
+          <div class="feature-visual etfr-visual"><div class="etfr-symbol">E<span>T</span>F<span>R</span></div><span class="visual-code">ETFR / DELTASHEET</span><span class="visual-status">IN DEVELOPMENT</span></div>
+          <div class="feature-info"><div class="feature-kicker">ADVENTURE RPG // STORY-DRIVEN</div><h3>ESCAPE THE FORSAKEN</h3><p>A strange journey through a world of encounters, choices, and secrets. Follow development and find the playable release.</p><div class="tag-row"><span>RPG</span><span>ADVENTURE</span><span>CONSTRUCT 2</span></div><a class="text-link" href="https://innygr.itch.io/escape-the-forsaken" target="_blank" rel="noopener noreferrer">VIEW GAME PAGE <b>↗</b></a></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section library-section" id="library">
+      <div class="section-head"><div><p class="eyebrow">// 02 — THE ARCADE</p><h2>GAME <em>LIBRARY</em></h2><p class="section-sub">Find something to play. No account required for the games hosted here.</p></div><span class="section-tag" id="game-count">01 PLAYABLE TITLE</span></div>
+      <div class="library-tools"><label class="search-box"><span>⌕</span><input id="game-search" type="search" placeholder="Search games..." autocomplete="off" aria-label="Search games"></label><div class="filters" role="group" aria-label="Filter games"><button class="filter active" data-filter="all">ALL</button><button class="filter" data-filter="arcade">ARCADE</button><button class="filter" data-filter="original">ORIGINALS</button><button class="filter" data-filter="experimental">EXPERIMENTAL</button></div></div>
+      <div class="game-grid" id="game-grid">
+        <article class="game-card" data-category="arcade" data-search="starfall courier arcade space action">
+          <a class="game-cover starfall-cover" href="arcade/starfall-courier.html" aria-label="Play Starfall Courier"><span class="cover-chip">BROWSER ARCADE</span><div class="starfall-icon">✦</div><span class="cover-bottom">DODGE. COLLECT. SURVIVE.</span></a>
+          <div class="game-details"><div><span class="game-type">ARCADE / ACTION</span><h3>STARFALL COURIER</h3></div><a class="play-button" href="arcade/starfall-courier.html">PLAY ↗</a></div>
+          <p class="game-description">Pilot through a meteor field, collect energy shards, and see how long you can last.</p>
+        </article>
+        <article class="game-card coming-card" data-category="original" data-search="void frontier space exploration mmo">
+          <div class="coming-cover"><span>◈</span><small>COMING SOON</small></div><div class="game-details"><div><span class="game-type">SPACE / EXPLORATION</span><h3>VOID FRONTIER</h3></div><span class="status-pill">IN DEV</span></div><p class="game-description">A shared, seed-generated universe. The frontier is still being built.</p>
+        </article>
+        <article class="game-card coming-card" data-category="original" data-search="escape forsaken etfr rpg adventure">
+          <a class="coming-cover etfr-mini" href="https://innygr.itch.io/escape-the-forsaken" target="_blank" rel="noopener noreferrer"><span>ETFR</span><small>GAME PAGE ↗</small></a><div class="game-details"><div><span class="game-type">RPG / ADVENTURE</span><h3>ESCAPE THE FORSAKEN</h3></div><a class="play-button" href="https://innygr.itch.io/escape-the-forsaken" target="_blank" rel="noopener noreferrer">VIEW ↗</a></div><p class="game-description">A Team Blacklight original. Visit its project page for current availability.</p>
+        </article>
+      </div>
+      <p class="empty-state" id="empty-state" hidden>No games match that search. Try another title or category.</p>
+    </section>
+
+    <section class="callout" id="about"><div><p class="eyebrow">// 03 — GAME DEVELOPMENT DIVISION</p><h2>SMALL TEAM.<br><span class="gradient">BIG WORLDS.</span></h2><p>Blacklight Games is the home of Team Blacklight's games, prototypes, and browser-playable experiments. New projects will appear here as they become ready.</p><a class="button primary" href="https://teamblacklight.ca">MEET TEAM BLACKLIGHT ↗</a></div><div class="callout-mark" aria-hidden="true">◈<span>TB / GAMES</span></div></section>
+  </main>
+  <footer><a class="brand" href="#home"><span class="brand-mark">◈</span> BLACKLIGHT<span class="cyan">_</span><small>GAMES</small></a><span>AN INDEPENDENT GAME PORTAL BY TEAM BLACKLIGHT</span><a href="#home">BACK TO TOP ↑</a><small>© <span id="year"></span> TEAM BLACKLIGHT</small></footer>
+</body>
+</html>
