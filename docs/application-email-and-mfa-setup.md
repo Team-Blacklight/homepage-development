@@ -14,10 +14,26 @@ The website calls the Supabase Edge Function `review-application` when an admin 
    supabase secrets set RESEND_API_KEY=re_... EMAIL_FROM="Team Blacklight <verified-sender@your-domain>" SITE_URL="https://your-actual-site-domain"
    ```
    Supabase supplies `SUPABASE_URL`, `SUPABASE_ANON_KEY` (or `SUPABASE_PUBLISHABLE_KEY`) and `SUPABASE_SERVICE_ROLE_KEY` to deployed functions in its environment. If your project does not expose one automatically, configure it as a secret using the value from Project Settings → API. Never put a service-role key or Resend key in website JavaScript.
-4. Replace the example `SITE_URL` with the actual public site origin. The acceptance button points to `/#account`.
+4. Replace the example `SITE_URL` with the actual public site origin. The acceptance button points to a URL containing a random, one-time staff invitation token.
 5. Test with a controlled application and an authorized admin/overseer account. Confirm a successful email removes the row; an invalid provider key or unverified sender should leave the row available for retry.
 
-The email function uses the existing `join_applications` and `profiles` tables. It does not need a new SQL migration.
+Accepted applications now receive a secure, random, single-use staff invitation token (not a browser cookie or password). The invitation is bound to the applicant's email and expires after seven days. The token is stored only as a SHA-256 hash in `staff_invites`; the original token appears in the email link.
+
+### Staff invitation setup (required)
+
+1. Run `staff-invitations.sql` in the Supabase SQL Editor. This adds `profiles.account_type` (default `customer`), the private `staff_invites` table, and an atomic one-time redemption function.
+2. Deploy the redemption Edge Function:
+   ```sh
+   supabase functions deploy redeem-staff-invite
+   ```
+3. Redeploy the updated decision email function:
+   ```sh
+   supabase functions deploy review-application
+   ```
+4. The same Supabase project secrets listed above are used by both functions.
+5. Test acceptance using an address you control. Create the account with the exact invited email, verify the email, complete TOTP setup, and confirm the account page displays **TEAM BLACKLIGHT STAFF**. Try the link again and confirm it cannot be redeemed twice.
+
+New ordinary registrations receive `account_type = 'customer'` by default. The invitation changes only the invited account's account type to `staff`; it does not grant admin or overseer privileges. Those elevated roles remain separately managed by authorized Team Blacklight administrators.
 
 ## 2. Two-step sign-in (TOTP)
 
