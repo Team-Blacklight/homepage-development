@@ -11,7 +11,8 @@ const gameDialog = document.getElementById('game-dialog');
 const gameDetails = {
   'starfall-courier': { description: 'Pilot through a meteor field, collect energy shards, and survive for as long as possible. Your best score is saved on this device.', tags: ['ARCADE', 'ACTION', 'KEYBOARD + TOUCH'], note: 'Playable in your browser. No account required.', art: '✦', launchLabel: 'PLAY STARFALL COURIER ↗' },
   'void-frontier': { description: 'A planned shared space frontier featuring deterministic procedural star systems, factions, exploration, and the Great Singularity at the centre of the map.', tags: ['SPACE', 'PROCEDURAL', 'IN DEVELOPMENT'], note: 'This project is still in development; the playable multiplayer build is not available yet.', art: '◈', noteOnly: true },
-  'escape-the-forsaken': { description: 'A story-driven RPG adventure from Team Blacklight. Open the project page to check the latest release and play options.', tags: ['RPG', 'ADVENTURE', 'TEAM BLACKLIGHT ORIGINAL'], note: 'Opens the external project page on itch.io.', art: 'ETFR', launchLabel: 'OPEN GAME PAGE ↗' }
+  'escape-the-forsaken': { description: 'A story-driven RPG adventure from Team Blacklight. Open the project page to check the latest release and play options.', tags: ['RPG', 'ADVENTURE', 'TEAM BLACKLIGHT ORIGINAL'], note: 'Opens the external project page on itch.io.', art: 'ETFR', launchLabel: 'OPEN GAME PAGE ↗' },
+  'the-long-dusk': { description: 'A new Team Blacklight game currently in development. Its genre, setting, and gameplay details will be added when they are ready to share.', tags: ['TEAM BLACKLIGHT ORIGINAL', 'IN DEVELOPMENT'], note: 'This project has been announced on the Blacklight Games portal. More information coming soon.', art: 'THE LONG DUSK', noteOnly: true }
 };
 const STORAGE = { favourites: 'blacklight-games:favourites:v1', recent: 'blacklight-games:recent:v1' };
 
