@@ -1708,3 +1708,6 @@ input:focus-visible {
 .mfa-verify-form { display:grid; gap:.65rem; max-width:360px; margin:1rem 0; }
 #mfa-code { letter-spacing:.25em; font-size:1.25rem; max-width:14rem; }
 #mfa-secret-wrap code { overflow-wrap:anywhere; user-select:all; }
+
+.staff-invite-notice { margin: 0 0 1.25rem; padding: 1rem 1.2rem; border: 1px solid rgba(155,92,255,.65); border-radius: 10px; background: rgba(85,48,140,.16); }
+.staff-invite-notice strong { color: #c6a0ff; letter-spacing: .08em; }
