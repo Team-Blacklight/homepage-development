@@ -113,6 +113,11 @@ Deno.serve(async request => {
   if (!emailResponse.ok) {
     const providerMessage = (await emailResponse.text()).slice(0, 500);
     console.error("Resend rejected application decision email:", providerMessage);
+    if (staffInviteToken) {
+      const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(staffInviteToken));
+      const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+      await adminClient.from("staff_invites").delete().eq("token_hash", hash);
+    }
     return respond(502, { error: "The email provider rejected the message. The application was kept for retry." });
   }
 
