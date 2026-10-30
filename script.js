@@ -283,6 +283,14 @@ const mfaVerifyForm = document.getElementById("mfa-verify-form");
 const mfaCode = document.getElementById("mfa-code");
 const mfaVerifyButton = document.getElementById("mfa-verify-button");
 const mfaCancelButton = document.getElementById("mfa-cancel-button");
+const staffInviteNotice = document.getElementById("staff-invite-notice");
+let pendingStaffInviteToken = new URLSearchParams(window.location.search).get("staff_invite") || "";
+if (pendingStaffInviteToken && !/^[a-f0-9]{64}$/.test(pendingStaffInviteToken)) pendingStaffInviteToken = "";
+if (pendingStaffInviteToken) {
+    if (staffInviteNotice) staffInviteNotice.hidden = false;
+    const signupEmail = document.getElementById("signup-email");
+    if (signupEmail) signupEmail.required = true;
+}
 
 function hideStaffDashboard() {
     if (staffDashboard) staffDashboard.hidden = true;
@@ -319,15 +327,31 @@ function showSignedIn(user, profile) {
         ? profile.role
         : "member";
 
-    accountRole.textContent = role.toUpperCase();
+    accountRole.textContent = profile?.account_type === "staff" ? "TEAM BLACKLIGHT STAFF" : (role === "admin" || role === "overseer" ? role.toUpperCase() : "CUSTOMER");
     setAccountMessage("Session active. Welcome to Team Blacklight.");
     hideStaffDashboard();
+}
+
+async function redeemPendingStaffInvite() {
+    if (!pendingStaffInviteToken) return false;
+    const { data, error } = await supabaseClient.functions.invoke("redeem-staff-invite", {
+        body: { invitation_token: pendingStaffInviteToken }
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    pendingStaffInviteToken = "";
+    if (staffInviteNotice) staffInviteNotice.hidden = true;
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete("staff_invite");
+    window.history.replaceState({}, "", cleanUrl.pathname + cleanUrl.hash);
+    setAccountMessage("Staff invitation redeemed. Your account is now a Team Blacklight staff account.");
+    return true;
 }
 
 async function loadCurrentProfile(user) {
     const { data, error } = await supabaseClient
         .from("profiles")
-        .select("display_name, role")
+        .select("display_name, role, account_type")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -406,8 +430,9 @@ mfaVerifyForm?.addEventListener("submit", async event => {
         if (!sessionData.session?.user) throw new Error("Verification succeeded, but the signed-in user could not be found.");
         const user = sessionData.session.user;
         pendingMfaFactorId = null; pendingMfaMode = null; mfaGateInProgress = false; mfaPanel.hidden = true;
+        await redeemPendingStaffInvite();
         await loadCurrentProfile(user);
-        setAccountMessage("Two-step verification complete.");
+        setAccountMessage(pendingStaffInviteToken ? "Two-step verification complete." : "Two-step verification complete.");
     } catch (error) { setAccountMessage(error.message || "Verification failed. Check the code and try again.", true); }
     finally { mfaVerifyButton.disabled = false; }
 });
