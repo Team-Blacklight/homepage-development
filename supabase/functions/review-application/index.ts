@@ -74,7 +74,21 @@ Deno.serve(async request => {
 
   const name = String(application.name || "Applicant").trim().slice(0, 80);
   const safeName = escapeHtml(name);
-  const accountUrl = siteUrl.replace(/\/+$/, "") + "/#account";
+  let staffInviteToken = "";
+  if (decision === "accepted") {
+    const raw = new Uint8Array(32);
+    crypto.getRandomValues(raw);
+    staffInviteToken = Array.from(raw, byte => byte.toString(16).padStart(2, "0")).join("");
+    const tokenHash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(staffInviteToken));
+    const tokenHashHex = Array.from(new Uint8Array(tokenHash), byte => byte.toString(16).padStart(2, "0")).join("");
+    const { error: inviteError } = await adminClient.from("staff_invites").insert({
+      email: String(application.email).trim().toLowerCase(),
+      token_hash: tokenHashHex,
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    });
+    if (inviteError) return respond(500, { error: "Could not create the secure staff invitation. The application was not removed." });
+  }
+  const accountUrl = siteUrl.replace(/\/+$/, "") + "/?staff_invite=" + encodeURIComponent(staffInviteToken) + "#account";
   const accepted = decision === "accepted";
   const subject = accepted
     ? "Your Team Blacklight application was accepted"
@@ -83,7 +97,7 @@ Deno.serve(async request => {
     ? `Hello ${name},\n\nThank you for applying to Team Blacklight. We're pleased to let you know that your application has been accepted.\n\nTo continue, create your Team Blacklight account here: ${accountUrl}\n\nUse the email address that received this message, and follow the on-screen instructions to verify your email and set up two-step verification. Creating an account is the next step; it does not ask you to send payment.\n\n— Team Blacklight`
     : `Hello ${name},\n\nThank you for taking the time to apply to Team Blacklight and share your interests with us. After reviewing your application, we're unable to offer you a place at this time. We appreciate your interest and wish you the best with your projects.\n\n— Team Blacklight`;
   const html = accepted
-    ? `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#e9e8ff;background:#090b16;padding:28px"><h1 style="color:#bd8cff">Team Blacklight</h1><p>Hello ${safeName},</p><p>Thank you for applying to Team Blacklight. We're pleased to let you know that your application has been <strong>accepted</strong>.</p><p>To continue, create your Team Blacklight account using the button below. Use the email address that received this message, then follow the instructions to verify your email and set up two-step verification.</p><p><a href="${escapeHtml(accountUrl)}" style="display:inline-block;background:#8b5cf6;color:#fff;text-decoration:none;padding:12px 18px;border-radius:6px;font-weight:bold">CREATE YOUR ACCOUNT</a></p><p>Creating an account is the next step; no payment is requested.</p><p>— Team Blacklight</p></div>`
+    ? `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#e9e8ff;background:#090b16;padding:28px"><h1 style="color:#bd8cff">Team Blacklight</h1><p>Hello ${safeName},</p><p>Thank you for applying to Team Blacklight. We're pleased to let you know that your application has been <strong>accepted</strong>.</p><p>Your application has been accepted for Team Blacklight staff membership. Use the one-time invitation below to create your staff account. It is tied to this email address and expires in seven days. After verifying your email, set up two-step verification.</p><p><a href="${escapeHtml(accountUrl)}" style="display:inline-block;background:#8b5cf6;color:#fff;text-decoration:none;padding:12px 18px;border-radius:6px;font-weight:bold">CREATE YOUR STAFF ACCOUNT</a></p><p>This invitation can only be used once and is not a login cookie or password. No payment is requested.</p><p>— Team Blacklight</p></div>`
     : `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#e9e8ff;background:#090b16;padding:28px"><h1 style="color:#bd8cff">Team Blacklight</h1><p>Hello ${safeName},</p><p>Thank you for taking the time to apply to Team Blacklight and share your interests with us.</p><p>After reviewing your application, we're unable to offer you a place at this time. We appreciate your interest and wish you the best with your projects.</p><p>— Team Blacklight</p></div>`;
 
   let emailResponse: Response;
@@ -100,6 +114,10 @@ Deno.serve(async request => {
     const providerMessage = (await emailResponse.text()).slice(0, 500);
     console.error("Resend rejected application decision email:", providerMessage);
     return respond(502, { error: "The email provider rejected the message. The application was kept for retry." });
+  }
+
+  if (decision !== "accepted") {
+    // Declined applications do not create staff invitations.
   }
 
   const { data: deleted, error: deleteError } = await adminClient
