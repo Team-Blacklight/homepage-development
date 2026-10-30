@@ -406,6 +406,7 @@ async function beginMfaGate(user) {
         if (levelError) throw levelError;
         if (level?.currentLevel === "aal2") {
             mfaGateInProgress = false; mfaPanel.hidden = true;
+            await redeemPendingStaffInvite();
             await loadCurrentProfile(user); return;
         }
         showMfaPanel({ mode: "challenge", factorId: factor.id });
@@ -432,7 +433,7 @@ mfaVerifyForm?.addEventListener("submit", async event => {
         pendingMfaFactorId = null; pendingMfaMode = null; mfaGateInProgress = false; mfaPanel.hidden = true;
         await redeemPendingStaffInvite();
         await loadCurrentProfile(user);
-        setAccountMessage(pendingStaffInviteToken ? "Two-step verification complete." : "Two-step verification complete.");
+        setAccountMessage("Two-step verification complete.");
     } catch (error) { setAccountMessage(error.message || "Verification failed. Check the code and try again.", true); }
     finally { mfaVerifyButton.disabled = false; }
 });
@@ -466,8 +467,10 @@ async function refreshSession() {
     if (data.session?.user) {
         const { data: level, error: levelError } = await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel();
         if (levelError) { showSignedOut(); setAccountMessage("Could not verify sign-in security. Please sign in again.", true); return; }
-        if (level?.currentLevel === "aal2") await loadCurrentProfile(data.session.user);
-        else await beginMfaGate(data.session.user);
+        if (level?.currentLevel === "aal2") {
+            await redeemPendingStaffInvite();
+            await loadCurrentProfile(data.session.user);
+        } else await beginMfaGate(data.session.user);
     } else {
         showSignedOut();
         setAccountMessage("Not signed in. Create an account or log in to continue.");
