@@ -61,6 +61,7 @@
       <div class="section-head"><div><p class="eyebrow">// 02 — THE ARCADE</p><h2>GAME <em>LIBRARY</em></h2><p class="section-sub">Find something to play. No account required for the games hosted here.</p></div><span class="section-tag" id="game-count">GAMES</span></div>
       <div class="library-tools">
         <label class="search-box"><span>⌕</span><input id="game-search" type="search" placeholder="Search games..." autocomplete="off" aria-label="Search games"></label>
+        <label class="sort-box">SORT <select id="game-sort" aria-label="Sort games"><option value="featured">FEATURED</option><option value="title">TITLE A–Z</option></select></label>
         <div class="filters" role="group" aria-label="Filter games">
           <button class="filter active" data-filter="all">ALL</button>
           <button class="filter" data-filter="arcade">ARCADE</button>
@@ -87,6 +88,7 @@
 
     <section class="callout" id="about"><div><p class="eyebrow">// 03 — GAME DEVELOPMENT DIVISION</p><h2>SMALL TEAM.<br><span class="gradient">BIG WORLDS.</span></h2><p>Blacklight Games is the home of Team Blacklight's games, prototypes, and browser-playable experiments. New projects will appear here as they become ready.</p><a class="button primary" href="https://teamblacklight.ca">MEET TEAM BLACKLIGHT ↗</a></div><div class="callout-mark" aria-hidden="true">◈<span>TB / GAMES</span></div></section>
   </main>
+  <dialog class="game-dialog" id="game-dialog" aria-labelledby="dialog-title"><form method="dialog"><button class="dialog-close" aria-label="Close game details">×</button></form><div class="dialog-art" id="dialog-art" aria-hidden="true">◈</div><p class="eyebrow" id="dialog-kicker">// GAME PROFILE</p><h2 id="dialog-title">GAME TITLE</h2><p id="dialog-description"></p><div class="dialog-tags" id="dialog-tags"></div><div class="dialog-actions"><a class="button primary" id="dialog-launch" href="#">PLAY GAME ↗</a><button class="button ghost" id="dialog-favourite" type="button">☆ ADD TO FAVOURITES</button></div><p class="dialog-note" id="dialog-note"></p></dialog>
   <footer><a class="brand" href="#home"><span class="brand-mark">◈</span> BLACKLIGHT<span class="cyan">_</span><small>GAMES</small></a><span>AN INDEPENDENT GAME PORTAL BY TEAM BLACKLIGHT</span><a href="#home">BACK TO TOP ↑</a><small>© <span id="year"></span> TEAM BLACKLIGHT</small></footer>
 </body>
 </html>
