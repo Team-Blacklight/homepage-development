@@ -21,3 +21,23 @@
 .recent-arrow{position:absolute;right:16px;bottom:14px;color:var(--cyan);font-size:19px}
 @media(max-width:900px){.recent-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.recent-grid{grid-template-columns:1fr}.favourite-button{margin-left:auto}}
+
+
+/* Game profile dialog and library sorting */
+.sort-box{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:.8rem;letter-spacing:.12em;font-weight:700}
+.sort-box select{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:8px}
+.details-button{background:transparent;border:1px solid var(--line);color:var(--muted);padding:7px 10px;border-radius:7px;font-size:.72rem;letter-spacing:.06em}
+.details-button:hover,.details-button:focus-visible{color:var(--cyan);border-color:var(--cyan)}
+.game-dialog{width:min(620px,calc(100% - 28px));max-height:90vh;overflow:auto;margin:auto;padding:28px;border:1px solid rgba(184,164,255,.4);border-radius:18px;background:linear-gradient(145deg,#151a2a,#090d16 75%);color:var(--text);box-shadow:0 25px 100px #000b}
+.game-dialog::backdrop{background:rgba(2,4,10,.82);backdrop-filter:blur(7px)}
+.dialog-close{display:block;margin-left:auto;border:1px solid var(--line);background:transparent;color:var(--text);width:38px;height:38px;border-radius:9px;font-size:1.5rem}
+.dialog-art{height:145px;display:grid;place-items:center;margin:4px 0 22px;border:1px solid var(--line);border-radius:12px;background:radial-gradient(ellipse,rgba(184,164,255,.2),transparent 70%),linear-gradient(135deg,#12182a,#080a10);font-family:Orbitron,sans-serif;font-size:3.5rem;color:var(--cyan);text-shadow:0 0 28px #66e7ff55}
+.game-dialog h2{font-family:Orbitron,sans-serif;font-size:clamp(1.35rem,4vw,2rem);margin:5px 0 12px}
+.game-dialog #dialog-description{color:#c1c7d8;font-size:1.12rem}
+.dialog-tags{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.dialog-tags span{border:1px solid var(--line);border-radius:5px;padding:5px 8px;color:var(--purple);font-size:.75rem;letter-spacing:.07em}
+.dialog-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.dialog-actions .button{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line)}
+.dialog-actions button{font-size:.8rem}
+.dialog-note{margin-top:18px;color:var(--muted);font-size:.92rem}
+@media(max-width:700px){.sort-box{width:100%;justify-content:flex-end}.game-dialog{padding:18px}.dialog-actions .button{width:100%}}
