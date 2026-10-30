@@ -5,7 +5,7 @@ The Team Blacklight Game Development Division portal. This is a separate static 
 ## Included
 
 - Responsive purple/cyan cyberpunk portal design.
-- Team Blacklight Originals showcase: VOID FRONTIER and Escape the Forsaken (ETFR).
+- Team Blacklight Originals showcase: VOID FRONTIER, Escape the Forsaken (ETFR), and The Long Dusk.
 - Searchable, category-filtered game library, including a favourites filter.
 - Per-browser favourites and recently played history using local storage.
 - Starfall Courier, a playable HTML5 canvas arcade game.
