@@ -179,9 +179,9 @@ function terminalRun(raw) {
                 const path = args.find(arg => !arg.startsWith("-")) || "~";
                 if (path === "/etc/blacklight" || path === "/etc" || path === "/") {
                     result = "Permission denied: restricted system path.";
-                } else if (path === "~" || path === "." || path === "/home/guest") {
+                } else if (path === "~" || path === "." || path === ("/home/" + terminalIdentity.username)) {
                     result = args.some(arg => ["-la", "-al", "-a", "-lah", "-l"].includes(arg))
-                        ? "total 3\ndrwxr-xr-x  2 guest guest 4096 Documents/\n-rw-r--r--  1 guest guest  190 README.txt\ndrwxr-xr-x  2 guest guest 4096 team-blacklight/"
+                        ? "total 3\ndrwxr-xr-x  2 " + terminalIdentity.username + " " + terminalIdentity.username + " 4096 Documents/\n-rw-r--r--  1 " + terminalIdentity.username + " " + terminalIdentity.username + "  190 README.txt\ndrwxr-xr-x  2 " + terminalIdentity.username + " " + terminalIdentity.username + " 4096 team-blacklight/"
                         : "Documents/    README.txt    team-blacklight/";
                 } else if (path === "Documents" || path === "Documents/") {
                     result = "policies-draft.txt    project-notes.txt";
