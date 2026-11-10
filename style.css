@@ -1711,3 +1711,26 @@ input:focus-visible {
 
 .staff-invite-notice { margin: 0 0 1.25rem; padding: 1rem 1.2rem; border: 1px solid rgba(155,92,255,.65); border-radius: 10px; background: rgba(85,48,140,.16); }
 .staff-invite-notice strong { color: #c6a0ff; letter-spacing: .08em; }
+
+
+/* ==========================================
+   TEAM BLACKLIGHT — HIDDEN SIGNAL MARKER
+   ========================================== */
+.signal-trigger {
+    display: inline;
+    padding: 0 2px;
+    border: 0;
+    background: transparent;
+    color: var(--purple-bright, #c084fc);
+    font: inherit;
+    opacity: 0.28;
+    cursor: pointer;
+    transition: opacity 0.2s ease, text-shadow 0.2s ease;
+}
+.signal-trigger:hover,
+.signal-trigger:focus-visible {
+    opacity: 1;
+    color: var(--cyan, #67e8f9);
+    text-shadow: 0 0 12px currentColor;
+    outline: none;
+}
