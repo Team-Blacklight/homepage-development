@@ -72,6 +72,8 @@ function terminalHelp() {
         "  status                 Show system status",
         "  projects               List public projects",
         "  secret                 Inspect an anomalous signal",
+        "  signal                 Trace an unlisted transmission",
+        "  backchannel            Open the fictional backchannel portal",
         "  history                Show commands entered this session",
         "  clear                  Clear the terminal",
         "",
@@ -207,6 +209,21 @@ function terminalRun(raw) {
                     "Fragment 001 // THE LIGHT IS NOT THE SOURCE."
                 ].join("\n");
                 break;
+            case "signal":
+                try { localStorage.setItem("tbl_arg_signal_seen", "1"); } catch (_) {}
+                result = [
+                    "[UNLISTED ROUTE DETECTED]",
+                    "A footer marker has been transmitting on a loop.",
+                    "It is not a real network endpoint.",
+                    "",
+                    "TRACE: /backchannel.html",
+                    "The first packet is waiting there."
+                ].join("\n");
+                break;
+            case "backchannel":
+                terminalWrite("Opening the fictional backchannel experience...", "terminal-system");
+                window.location.href = "backchannel.html";
+                return;
             case "history":
                 result = terminalHistory.map((item, index) => String(index + 1).padStart(3) + "  " + item).join("\n");
                 break;
@@ -239,13 +256,32 @@ if (terminalForm && terminalInput && terminalOutput) {
         } else if (event.key === "Tab") {
             event.preventDefault();
             const partial = terminalInput.value.trim().split(/\s+/).pop() || "";
-            const commands = ["help", "ls", "cat", "uname", "sudo", "apt", "status", "projects", "secret", "history", "clear"];
+            const commands = ["help", "ls", "cat", "uname", "sudo", "apt", "status", "projects", "secret", "signal", "backchannel", "history", "clear"];
             const matches = commands.filter(item => item.startsWith(partial));
             if (matches.length === 1) terminalInput.value = terminalInput.value.slice(0, terminalInput.value.lastIndexOf(partial)) + matches[0] + " ";
             else if (matches.length > 1) terminalWrite(matches.join("    "), "terminal-system");
         }
     });
 }
+
+
+ // ============================================
+ // TEAM BLACKLIGHT — BACKCHANNEL DISCOVERY
+ // ============================================
+ const signalTrigger = document.getElementById("signal-trigger");
+ if (signalTrigger) {
+     let signalClicks = 0;
+     let signalReset;
+     signalTrigger.addEventListener("click", () => {
+         signalClicks += 1;
+         window.clearTimeout(signalReset);
+         signalReset = window.setTimeout(() => { signalClicks = 0; }, 1800);
+         if (signalClicks >= 5) {
+             try { localStorage.setItem("tbl_arg_signal_seen", "1"); } catch (_) {}
+             window.location.href = "backchannel.html";
+         }
+     });
+ }
 
 // ============================================
 // TEAM BLACKLIGHT — SUPABASE AUTHENTICATION
