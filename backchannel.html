@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#080610">
+<meta name="description" content="An unlisted Team Blacklight transmission."><title>BACKCHANNEL // H-SCALE</title>
+<style>
+:root{color-scheme:dark;--bg:#080610;--purple:#c084fc;--cyan:#67e8f9;--muted:#9a91ad;--line:rgba(192,132,252,.25)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0,rgba(109,40,217,.2),transparent 55%),var(--bg);color:#f3eaff;font:17px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}
+main{width:min(900px,calc(100% - 32px));margin:8vh auto;padding:clamp(22px,5vw,48px);border:1px solid var(--line);background:rgba(16,11,28,.88);box-shadow:0 0 70px rgba(109,40,217,.12)}
+.eyebrow{color:var(--purple);font-size:12px;letter-spacing:.18em}.status{color:var(--cyan)}h1{font-size:clamp(30px,7vw,58px);line-height:1.05;letter-spacing:-.05em;margin:18px 0}p{color:var(--muted)}
+.readout{margin:28px 0;padding:20px;border:1px solid var(--line);background:#080610;white-space:pre-wrap;color:#a7f3d0;overflow-wrap:anywhere}
+label{display:block;color:var(--cyan);margin:22px 0 8px}input{width:100%;padding:14px;background:#080610;border:1px solid var(--line);color:#fff;font:inherit;outline:none}input:focus{border-color:var(--cyan)}
+button{margin-top:12px;padding:12px 18px;border:1px solid var(--purple);background:rgba(192,132,252,.12);color:#fff;font:inherit;cursor:pointer}button:hover{background:rgba(192,132,252,.24)}
+.message{min-height:28px;color:var(--cyan)}.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12px}.foot a{color:var(--purple)}.warning{font-size:12px;color:#81798e}
+</style></head>
+<body><main>
+<p class="eyebrow">TEAM BLACKLIGHT // UNLISTED SERVICE</p><p class="status">● LOCAL SESSION // ROUTE FOUND</p>
+<h1>BACKCHANNEL<span style="color:var(--cyan)">_</span></h1>
+<p>Relay designation: H-SCALE. This interface is part of a fictional, browser-based Team Blacklight story. It is not connected to a VPN, private network, or production infrastructure.</p>
+<div class="readout" aria-live="polite">[HANDSHAKE ACCEPTED]
+ROUTE: UNLISTED
+PACKETS RECEIVED: 01
+SENDER: WITHHELD
+
+Recovered fragment:
+"THE LIGHT IS NOT THE SOURCE."
+
+A second packet is locked.
+Hint: the source is named in the fragment itself.</div>
+<form id="packet-form"><label for="packet-answer">PACKET 002 // IDENTIFY THE SOURCE</label>
+<input id="packet-answer" name="answer" maxlength="40" autocomplete="off" spellcheck="false" placeholder="enter the missing word" required>
+<button type="submit">DECODE PACKET</button><p class="message" id="packet-message" role="status" aria-live="polite"></p></form>
+<p class="warning">STORY SAFETY: All clues are fictional and stay on this website. No real-world locations, accounts, credentials, or infrastructure are part of the puzzle.</p>
+<div class="foot"><a href="index.html">← RETURN TO PUBLIC SITE</a><span>BACKCHANNEL BUILD 0.1 // TBL ARG</span></div>
+</main>
+<script>
+(() => {
+const form=document.getElementById("packet-form"),input=document.getElementById("packet-answer"),message=document.getElementById("packet-message");
+form.addEventListener("submit",event=>{event.preventDefault();if(input.value.trim().toLowerCase()==="source"){
+message.textContent="PACKET 002 DECODED // FRAGMENT: FOLLOW THE SECOND ECHO. More transmissions are pending.";
+try{localStorage.setItem("tbl_arg_packet_002","decoded");}catch(_){}input.value="";
+}else{message.textContent="DECODE FAILED // The fragment is literal. Read it again."; }});
+})();
+</script></body></html>
