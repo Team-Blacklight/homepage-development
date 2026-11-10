@@ -14,6 +14,25 @@ const terminalOutput = document.getElementById("terminal-output");
 const terminalHistory = [];
 let terminalHistoryIndex = 0;
 let terminalClearance = false;
+let terminalIdentity = { username: "guest", role: "guest", accountType: "guest", authenticated: false };
+function setTerminalIdentity(user = null, profile = null) {
+    if (!user) { terminalIdentity = { username: "guest", role: "guest", accountType: "guest", authenticated: false }; return; }
+    const role = ["member", "admin", "overseer"].includes(profile?.role) ? profile.role : "member";
+    const accountType = profile?.account_type === "staff" ? "staff" : "customer";
+    const fallbackName = String(user.email || "member").split("@")[0];
+    terminalIdentity = { username: String(profile?.display_name || fallbackName).trim().replace(/\\s+/g, "_").slice(0, 32), role, accountType, authenticated: true };
+}
+function terminalHasStaffAccess() { return terminalIdentity.authenticated && (terminalIdentity.accountType === "staff" || ["admin", "overseer"].includes(terminalIdentity.role)); }
+function terminalHasAdminAccess() { return terminalIdentity.authenticated && ["admin", "overseer"].includes(terminalIdentity.role); }
+function terminalHasOverseerAccess() { return terminalIdentity.authenticated && terminalIdentity.role === "overseer"; }
+function terminalAvailableCommands() {
+    const commands = ["help", "whoami", "ls", "cat", "uname", "sudo", "apt", "status", "projects", "secret", "signal", "backchannel", "history", "clear"];
+    if (terminalIdentity.authenticated) commands.push("account");
+    if (terminalHasStaffAccess()) commands.push("staff");
+    if (terminalHasAdminAccess()) commands.push("admin");
+    if (terminalHasOverseerAccess()) commands.push("overseer");
+    return commands;
+}
 
 const terminalFiles = {
     "README.txt": "Welcome to the Team Blacklight terminal.\nThis is a Linux-style simulation running in your browser.\nTry: help, ls, cat README.txt, uname -a, status, projects.",
@@ -57,29 +76,29 @@ function terminalWrite(text, className = "") {
 }
 
 function terminalHelp() {
-    return [
+    const lines = [
         "TEAM BLACKLIGHT // LINUX SHELL SIMULATOR",
+        "Identity: " + terminalIdentity.username + " | Access: " + terminalIdentity.role.toUpperCase(),
         "",
-        "  help                  Show available commands",
-        "  ls [-la]               List public sample files",
-        "  cat FILE               Read a public sample file",
-        "  uname [-a]             Show simulated system information",
-        "  sudo apt update        Simulate refreshing package lists",
-        "  sudo apt install NAME Preview a package installation",
-        "  sudo projects          View restricted project metadata",
-        "  sudo ls /etc/blacklight List restricted records",
-        "  sudo cat PATH          Read a restricted record",
-        "  status                 Show system status",
-        "  projects               List public projects",
-        "  secret                 Inspect an anomalous signal",
-        "  signal                 Trace an unlisted transmission",
-        "  backchannel            Open the fictional backchannel portal",
-        "  history                Show commands entered this session",
-        "  clear                  Clear the terminal",
-        "",
-        "Hint: not every transmission is meant for public access.",
-        "This is a simulation. No real commands or passwords are used."
-    ].join("\n");
+        "  help                  Show commands available to this account",
+        "  whoami                Display your terminal identity",
+        "  ls [-la]              List public sample files",
+        "  cat FILE              Read a public sample file",
+        "  uname [-a]            Show simulated system information",
+        "  status                Show system status",
+        "  projects              List public projects",
+        "  secret                Inspect an anomalous signal",
+        "  signal                Trace an unlisted transmission",
+        "  backchannel           Open the fictional backchannel portal",
+        "  history               Show commands entered this session",
+        "  clear                 Clear the terminal"
+    ];
+    if (terminalIdentity.authenticated) lines.push("  account               Show your account summary");
+    if (terminalHasStaffAccess()) lines.push("  staff                 Open simulated staff tools");
+    if (terminalHasAdminAccess()) lines.push("  admin                 Open simulated admin tools");
+    if (terminalHasOverseerAccess()) lines.push("  overseer              Show highest-level access");
+    lines.push("", "This is a browser simulation. Sensitive actions require server-side authorization.");
+    return lines.join("\n");
 }
 
 function terminalRun(raw) {
@@ -90,7 +109,7 @@ function terminalRun(raw) {
     terminalHistoryIndex = terminalHistory.length;
 
     const prompt = document.createElement("p");
-    prompt.innerHTML = '<span class="terminal-highlight">guest@team-blacklight:~$</span> ' + terminalEscape(input);
+    prompt.innerHTML = '<span class="terminal-highlight">' + terminalEscape(terminalIdentity.username) + '@team-blacklight:~$</span> ' + terminalEscape(input);
     terminalOutput.appendChild(prompt);
 
     const args = input.match(/"[^"]*"|'[^']*'|\S+/g)?.map(part => part.replace(/^["']|["']$/g, "")) || [];
@@ -224,6 +243,33 @@ function terminalRun(raw) {
                 terminalWrite("Opening the fictional backchannel experience...", "terminal-system");
                 window.location.href = "backchannel.html";
                 return;
+            case "whoami":
+                result = terminalIdentity.username + "\nAccess level: " + terminalIdentity.role +
+                    "\nAccount type: " + terminalIdentity.accountType +
+                    "\nAuthenticated: " + (terminalIdentity.authenticated ? "yes" : "no");
+                break;
+            case "account":
+                result = terminalIdentity.authenticated
+                    ? "ACCOUNT SESSION // ACTIVE\nUser: " + terminalIdentity.username +
+                      "\nAccount type: " + terminalIdentity.accountType +
+                      "\nPermission level: " + terminalIdentity.role
+                    : "Access denied: sign in to use account commands.";
+                break;
+            case "staff":
+                result = terminalHasStaffAccess()
+                    ? "TEAM BLACKLIGHT // STAFF TOOLKIT\nStaff workspace shortcut available. Real operations remain in the protected Control interface."
+                    : "Permission denied: staff access required.";
+                break;
+            case "admin":
+                result = terminalHasAdminAccess()
+                    ? "TEAM BLACKLIGHT // ADMIN TOOLKIT\nContent, application, and store management shortcuts available. Real changes require backend authorization."
+                    : "Permission denied: admin or overseer access required.";
+                break;
+            case "overseer":
+                result = terminalHasOverseerAccess()
+                    ? "TEAM BLACKLIGHT // OVERSEER ACCESS\nPermission governance shortcut available. This command cannot modify permissions."
+                    : "Permission denied: overseer access required.";
+                break;
             case "history":
                 result = terminalHistory.map((item, index) => String(index + 1).padStart(3) + "  " + item).join("\n");
                 break;
@@ -256,7 +302,7 @@ if (terminalForm && terminalInput && terminalOutput) {
         } else if (event.key === "Tab") {
             event.preventDefault();
             const partial = terminalInput.value.trim().split(/\s+/).pop() || "";
-            const commands = ["help", "ls", "cat", "uname", "sudo", "apt", "status", "projects", "secret", "signal", "backchannel", "history", "clear"];
+            const commands = terminalAvailableCommands();
             const matches = commands.filter(item => item.startsWith(partial));
             if (matches.length === 1) terminalInput.value = terminalInput.value.slice(0, terminalInput.value.lastIndexOf(partial)) + matches[0] + " ";
             else if (matches.length > 1) terminalWrite(matches.join("    "), "terminal-system");
@@ -342,12 +388,14 @@ function setAccountMessage(message, isError = false) {
 }
 
 function showSignedOut() {
+    setTerminalIdentity();
     if (authForms) authForms.hidden = false;
     if (accountDetails) accountDetails.hidden = true;
     hideStaffDashboard();
 }
 
 function showSignedIn(user, profile) {
+    setTerminalIdentity(user, profile);
     if (authForms) authForms.hidden = true;
     if (accountDetails) accountDetails.hidden = false;
 
