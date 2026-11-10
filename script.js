@@ -20,7 +20,7 @@ function setTerminalIdentity(user = null, profile = null) {
     const role = ["member", "admin", "overseer"].includes(profile?.role) ? profile.role : "member";
     const accountType = profile?.account_type === "staff" ? "staff" : "customer";
     const fallbackName = String(user.email || "member").split("@")[0];
-    terminalIdentity = { username: String(profile?.display_name || fallbackName).trim().replace(/\\s+/g, "_").slice(0, 32), role, accountType, authenticated: true };
+    terminalIdentity = { username: String(profile?.display_name || fallbackName).trim().replace(/\s+/g, "_").slice(0, 32), role, accountType, authenticated: true };
 }
 function terminalHasStaffAccess() { return terminalIdentity.authenticated && (terminalIdentity.accountType === "staff" || ["admin", "overseer"].includes(terminalIdentity.role)); }
 function terminalHasAdminAccess() { return terminalIdentity.authenticated && ["admin", "overseer"].includes(terminalIdentity.role); }
